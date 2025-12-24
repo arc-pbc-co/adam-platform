@@ -1,0 +1,36 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      timeInterval: 15s
+
+  - name: PostgreSQL
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    database: nova
+    user: nova
+    secureJsonData:
+      password: nova_dev_password
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1500
+
+  - name: TimescaleDB
+    type: postgres
+    access: proxy
+    url: timescaledb:5432
+    database: timescale
+    user: timescale
+    secureJsonData:
+      password: timescale_dev_password
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1500
+      timescaledb: true

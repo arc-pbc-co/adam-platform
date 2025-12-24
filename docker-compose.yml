@@ -1,0 +1,208 @@
+version: '3.8'
+
+services:
+  # PostgreSQL - Main database for experiments, users, and application data
+  postgres:
+    image: postgres:15-alpine
+    container_name: adam-postgres
+    environment:
+      POSTGRES_DB: nova
+      POSTGRES_USER: nova
+      POSTGRES_PASSWORD: nova_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nova"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - adam-network
+
+  # TimescaleDB - Time-series data for measurements and sensor data
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: adam-timescaledb
+    environment:
+      POSTGRES_DB: timescale
+      POSTGRES_USER: timescale
+      POSTGRES_PASSWORD: timescale_dev_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+      - ./backend/docker/init-timescale.sql:/docker-entrypoint-initdb.d/init-timescale.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timescale"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - adam-network
+
+  # Qdrant - Vector database for materials knowledge and embeddings
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: adam-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - adam-network
+
+  # NATS - Message broker for event-driven architecture
+  nats:
+    image: nats:alpine
+    container_name: adam-nats
+    ports:
+      - "4222:4222"  # Client connections
+      - "8222:8222"  # HTTP monitoring
+      - "6222:6222"  # Cluster connections
+    command: ["-js", "-m", "8222"]  # Enable JetStream and monitoring
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - adam-network
+
+  # Redis - Caching and session storage
+  redis:
+    image: redis:7-alpine
+    container_name: adam-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - adam-network
+
+  # Graph Orchestrator - Core workflow engine (Nova)
+  graph-orchestrator:
+    build:
+      context: ./backend/nova
+      dockerfile: Dockerfile.orchestrator
+    container_name: adam-graph-orchestrator
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://nova:nova_dev_password@postgres:5432/nova
+      TIMESCALE_URL: postgresql://timescale:timescale_dev_password@timescaledb:5432/timescale
+      VECTOR_DB_URL: http://qdrant:6333
+      NATS_URL: nats://nats:4222
+      REDIS_URL: redis://redis:6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      LOG_LEVEL: debug
+    ports:
+      - "3100:3100"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      timescaledb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/nova:/app
+      - /app/node_modules
+    networks:
+      - adam-network
+
+  # API Gateway - REST/WebSocket gateway for frontend
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: adam-api-gateway
+    environment:
+      NODE_ENV: development
+      PORT: 3200
+      ORCHESTRATOR_URL: http://graph-orchestrator:3100
+      DATABASE_URL: postgresql://nova:nova_dev_password@postgres:5432/nova
+      NATS_URL: nats://nats:4222
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-dev_secret_change_in_production}
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - "3200:3200"
+    depends_on:
+      - graph-orchestrator
+      - postgres
+      - nats
+      - redis
+    volumes:
+      - ./backend/api-gateway:/app
+      - /app/node_modules
+    networks:
+      - adam-network
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: adam-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./backend/docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - adam-network
+
+  # Grafana - Monitoring dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: adam-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./backend/docker/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    depends_on:
+      - prometheus
+    networks:
+      - adam-network
+
+volumes:
+  postgres_data:
+  timescale_data:
+  qdrant_data:
+  nats_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  adam-network:
+    driver: bridge

@@ -1,0 +1,126 @@
+{
+  "app": {
+    "name": "ADAM Platform",
+    "version": "1.0.0",
+    "environment": "development"
+  },
+  "database": {
+    "postgres": {
+      "host": "localhost",
+      "port": 5432,
+      "database": "nova",
+      "user": "nova",
+      "password": "nova_dev_password",
+      "pool": {
+        "min": 2,
+        "max": 10
+      }
+    },
+    "timescale": {
+      "host": "localhost",
+      "port": 5433,
+      "database": "timescale",
+      "user": "timescale",
+      "password": "timescale_dev_password",
+      "pool": {
+        "min": 2,
+        "max": 10
+      }
+    },
+    "vector": {
+      "url": "http://localhost:6333",
+      "collectionName": "materials_knowledge"
+    },
+    "redis": {
+      "url": "redis://localhost:6379",
+      "ttl": 3600
+    }
+  },
+  "messaging": {
+    "nats": {
+      "url": "nats://localhost:4222",
+      "streams": {
+        "experiments": "EXPERIMENTS",
+        "hardware": "HARDWARE",
+        "agents": "AGENTS"
+      }
+    }
+  },
+  "services": {
+    "orchestrator": {
+      "port": 3100,
+      "baseUrl": "http://localhost:3100"
+    },
+    "apiGateway": {
+      "port": 3200,
+      "baseUrl": "http://localhost:3200"
+    }
+  },
+  "agents": {
+    "planner": {
+      "enabled": true,
+      "model": "gpt-4",
+      "temperature": 0.2
+    },
+    "designer": {
+      "enabled": true,
+      "model": "gpt-4",
+      "temperature": 0.3
+    },
+    "simulator": {
+      "enabled": true,
+      "model": "gpt-4",
+      "temperature": 0.1
+    },
+    "controller": {
+      "enabled": true,
+      "model": "gpt-4",
+      "temperature": 0.0
+    },
+    "analyzer": {
+      "enabled": true,
+      "model": "gpt-4-vision-preview",
+      "temperature": 0.2
+    }
+  },
+  "safety": {
+    "riskLevels": {
+      "R1": {
+        "autoApprove": true,
+        "requiresReview": false,
+        "description": "Low risk - automated approval"
+      },
+      "R2": {
+        "autoApprove": false,
+        "requiresReview": true,
+        "description": "Medium risk - supervisor review required"
+      },
+      "R3": {
+        "autoApprove": false,
+        "requiresReview": true,
+        "description": "High risk - full team approval required"
+      }
+    }
+  },
+  "hardware": {
+    "desktopMetal": {
+      "apiUrl": "https://live.desktopmetal.com/api/v1",
+      "timeout": 30000,
+      "retries": 3
+    }
+  },
+  "monitoring": {
+    "prometheus": {
+      "enabled": true,
+      "port": 9090
+    },
+    "grafana": {
+      "enabled": true,
+      "port": 3001
+    },
+    "logging": {
+      "level": "debug",
+      "format": "json"
+    }
+  }
+}
