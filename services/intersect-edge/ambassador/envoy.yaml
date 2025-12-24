@@ -1,0 +1,222 @@
+# INTERSECT Edge Ambassador Proxy Configuration
+# Based on Envoy Proxy
+#
+# This configuration provides:
+# - mTLS termination for secure edge-to-cloud communication
+# - Request routing to instrument controllers
+# - Retry logic and circuit breaking
+# - Rate limiting
+# - Request/response logging
+
+admin:
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 9901
+
+static_resources:
+  listeners:
+    # Main HTTPS listener for ADAM backend connections
+    - name: edge_listener
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 8443
+      filter_chains:
+        - transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+              require_client_certificate: true
+              common_tls_context:
+                tls_certificates:
+                  - certificate_chain:
+                      filename: /certs/server.crt
+                    private_key:
+                      filename: /certs/server.key
+                validation_context:
+                  trusted_ca:
+                    filename: /certs/ca.crt
+                  # Only allow connections from ADAM backend
+                  match_typed_subject_alt_names:
+                    - san_type: DNS
+                      matcher:
+                        exact: "adam-backend.arcimpact.local"
+          filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: edge_ingress
+                codec_type: AUTO
+                access_log:
+                  - name: envoy.access_loggers.stdout
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
+                      log_format:
+                        json_format:
+                          timestamp: "%START_TIME%"
+                          method: "%REQ(:METHOD)%"
+                          path: "%REQ(:PATH)%"
+                          protocol: "%PROTOCOL%"
+                          response_code: "%RESPONSE_CODE%"
+                          response_flags: "%RESPONSE_FLAGS%"
+                          duration_ms: "%DURATION%"
+                          upstream_host: "%UPSTREAM_HOST%"
+                          request_id: "%REQ(X-REQUEST-ID)%"
+                          trace_id: "%REQ(X-TRACE-ID)%"
+                route_config:
+                  name: intersect_routes
+                  virtual_hosts:
+                    - name: intersect_services
+                      domains:
+                        - "*"
+                      routes:
+                        # Instrument controller routes
+                        - match:
+                            prefix: "/instrument/"
+                          route:
+                            cluster: instrument_controllers
+                            prefix_rewrite: "/"
+                            timeout: 300s  # 5 minutes for long-running operations
+                            retry_policy:
+                              retry_on: "5xx,reset,connect-failure,retriable-4xx"
+                              num_retries: 3
+                              per_try_timeout: 60s
+                              retry_back_off:
+                                base_interval: 1s
+                                max_interval: 10s
+                        # Simulated controller routes
+                        - match:
+                            prefix: "/simulated/"
+                          route:
+                            cluster: simulated_controller
+                            prefix_rewrite: "/"
+                            timeout: 120s
+                            retry_policy:
+                              retry_on: "5xx,reset,connect-failure"
+                              num_retries: 2
+                        # Data management routes
+                        - match:
+                            prefix: "/data/"
+                          route:
+                            cluster: data_management
+                            prefix_rewrite: "/"
+                            timeout: 60s
+                        # Health check endpoint
+                        - match:
+                            prefix: "/health"
+                          route:
+                            cluster: local_health
+                            timeout: 5s
+                http_filters:
+                  # Rate limiting
+                  - name: envoy.filters.http.local_ratelimit
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+                      stat_prefix: http_local_rate_limiter
+                      token_bucket:
+                        max_tokens: 100
+                        tokens_per_fill: 100
+                        fill_interval: 1s
+                      filter_enabled:
+                        runtime_key: local_rate_limit_enabled
+                        default_value:
+                          numerator: 100
+                          denominator: HUNDRED
+                      filter_enforced:
+                        runtime_key: local_rate_limit_enforced
+                        default_value:
+                          numerator: 100
+                          denominator: HUNDRED
+                  # Request header manipulation
+                  - name: envoy.filters.http.header_to_metadata
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.header_to_metadata.v3.Config
+                      request_rules:
+                        - header: x-experiment-run-id
+                          on_header_present:
+                            metadata_namespace: intersect
+                            key: experiment_run_id
+                        - header: x-trace-id
+                          on_header_present:
+                            metadata_namespace: intersect
+                            key: trace_id
+                  # Router filter (must be last)
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+    # Instrument controllers cluster
+    - name: instrument_controllers
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      connect_timeout: 10s
+      circuit_breakers:
+        thresholds:
+          - priority: DEFAULT
+            max_connections: 100
+            max_pending_requests: 100
+            max_requests: 100
+            max_retries: 3
+      health_checks:
+        - timeout: 5s
+          interval: 30s
+          unhealthy_threshold: 3
+          healthy_threshold: 1
+          http_health_check:
+            path: /health
+      load_assignment:
+        cluster_name: instrument_controllers
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: instrument-controller-dm
+                      port_value: 8080
+
+    # Simulated controller cluster
+    - name: simulated_controller
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      connect_timeout: 5s
+      load_assignment:
+        cluster_name: simulated_controller
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: instrument-controller-sim
+                      port_value: 8080
+
+    # Data management cluster
+    - name: data_management
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      connect_timeout: 10s
+      load_assignment:
+        cluster_name: data_management
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: data-management
+                      port_value: 8080
+
+    # Local health check endpoint
+    - name: local_health
+      type: STATIC
+      lb_policy: ROUND_ROBIN
+      connect_timeout: 1s
+      load_assignment:
+        cluster_name: local_health
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 127.0.0.1
+                      port_value: 9901

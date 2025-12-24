@@ -1,0 +1,583 @@
+# INTERSECT Instrument Controller Capability Contract v0.1
+# Based on INTERSECT Architecture: https://intersect-architecture.readthedocs.io/en/latest/ms/classification/experiment/capabilities/instrument-control.html
+
+openapi: 3.0.3
+info:
+  title: INTERSECT Instrument Controller Capability
+  description: |
+    Capability for command/control and state inspection of scientific instruments.
+    Distinguishes between:
+    - Actions: Discrete, idempotent operations that don't produce data products
+    - Activities: Sequences of operations that produce data products
+  version: 0.1.0
+  contact:
+    name: Arc Impact Engineering
+    email: engineering@arcimpact.com
+
+paths:
+  /actions:
+    get:
+      operationId: listActions
+      summary: List available actions
+      description: Returns list of discrete operations this controller supports
+      responses:
+        '200':
+          description: List of action names
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionListResponse'
+        '503':
+          description: Controller unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /actions/{actionName}:
+    get:
+      operationId: getActionDescription
+      summary: Get action description
+      parameters:
+        - name: actionName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Action description
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionDescriptionResponse'
+        '404':
+          description: Unknown action
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /actions/{actionName}/perform:
+    post:
+      operationId: performAction
+      summary: Execute a discrete action
+      description: |
+        Executes an idempotent action. Completion is signaled via InstrumentActionCompletion event.
+      parameters:
+        - name: actionName
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerformActionRequest'
+      responses:
+        '202':
+          description: Action accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerformActionResponse'
+        '400':
+          description: Invalid options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Controller busy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Controller unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /activities:
+    get:
+      operationId: listActivities
+      summary: List available activities
+      description: Returns list of activity sequences this controller supports
+      responses:
+        '200':
+          description: List of activity names
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityListResponse'
+        '503':
+          description: Controller unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /activities/{activityName}:
+    get:
+      operationId: getActivityDescription
+      summary: Get activity description
+      parameters:
+        - name: activityName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Activity description
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityDescriptionResponse'
+        '404':
+          description: Unknown activity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /activities/{activityName}/start:
+    post:
+      operationId: startActivity
+      summary: Start an activity
+      description: |
+        Initiates an activity sequence. Returns activityId for tracking.
+        Status updates via InstrumentActivityStatusChange events.
+      parameters:
+        - name: activityName
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartActivityRequest'
+      responses:
+        '202':
+          description: Activity started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartActivityResponse'
+        '400':
+          description: Invalid options or deadline
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Controller busy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /activities/instance/{activityId}/status:
+    get:
+      operationId: getActivityStatus
+      summary: Get activity status
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Activity status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityStatusResponse'
+        '404':
+          description: Unknown activity ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /activities/instance/{activityId}/data:
+    get:
+      operationId: getActivityData
+      summary: Get activity data products
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Data product UUIDs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityDataResponse'
+        '404':
+          description: Unknown activity ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '425':
+          description: Data not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /activities/instance/{activityId}/cancel:
+    post:
+      operationId: cancelActivity
+      summary: Cancel an activity
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelActivityRequest'
+      responses:
+        '200':
+          description: Activity cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelActivityResponse'
+        '404':
+          description: Unknown activity ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # Common types
+    KeyValue:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+      required:
+        - key
+        - value
+
+    Correlation:
+      type: object
+      description: ADAM correlation identifiers for tracking
+      properties:
+        experimentRunId:
+          type: string
+        campaignId:
+          type: string
+        traceId:
+          type: string
+      required:
+        - experimentRunId
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          enum:
+            - controller_unavailable
+            - controller_busy
+            - unknown_action
+            - unknown_activity
+            - unknown_activity_id
+            - invalid_options
+            - deadline_invalid
+            - data_not_ready
+            - internal_error
+        message:
+          type: string
+        details:
+          type: object
+      required:
+        - error
+        - message
+
+    # Action types
+    ActionListResponse:
+      type: object
+      properties:
+        actionNames:
+          type: array
+          items:
+            type: string
+      required:
+        - actionNames
+
+    ActionDescriptionResponse:
+      type: object
+      properties:
+        actionName:
+          type: string
+        description:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionDefinition'
+        idempotent:
+          type: boolean
+          default: true
+      required:
+        - actionName
+        - description
+
+    OptionDefinition:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [string, number, boolean, enum]
+        required:
+          type: boolean
+        default:
+          type: string
+        description:
+          type: string
+        enumValues:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - type
+
+    PerformActionRequest:
+      type: object
+      properties:
+        actionOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyValue'
+        idempotencyKey:
+          type: string
+          description: Unique key to ensure action is only performed once
+        correlation:
+          $ref: '#/components/schemas/Correlation'
+      required:
+        - idempotencyKey
+
+    PerformActionResponse:
+      type: object
+      properties:
+        accepted:
+          type: boolean
+        message:
+          type: string
+      required:
+        - accepted
+
+    # Activity types
+    ActivityListResponse:
+      type: object
+      properties:
+        activityNames:
+          type: array
+          items:
+            type: string
+      required:
+        - activityNames
+
+    ActivityDescriptionResponse:
+      type: object
+      properties:
+        activityName:
+          type: string
+        description:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionDefinition'
+        estimatedDuration:
+          type: integer
+          description: Estimated duration in seconds
+        dataProducts:
+          type: array
+          items:
+            type: string
+          description: Types of data products this activity generates
+      required:
+        - activityName
+        - description
+
+    StartActivityRequest:
+      type: object
+      properties:
+        activityOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyValue'
+        activityDeadline:
+          type: string
+          format: date-time
+          description: Optional deadline for activity completion
+        correlation:
+          $ref: '#/components/schemas/Correlation'
+      required:
+        - correlation
+
+    StartActivityResponse:
+      type: object
+      properties:
+        activityId:
+          type: string
+        message:
+          type: string
+      required:
+        - activityId
+
+    ActivityStatusResponse:
+      type: object
+      properties:
+        activityId:
+          type: string
+        activityName:
+          type: string
+        activityStatus:
+          type: string
+          enum:
+            - pending
+            - running
+            - completed
+            - failed
+            - cancelled
+        statusMsg:
+          type: string
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        timeBegin:
+          type: string
+          format: date-time
+        timeEnd:
+          type: string
+          format: date-time
+        errorMsg:
+          type: string
+      required:
+        - activityId
+        - activityStatus
+
+    ActivityDataResponse:
+      type: object
+      properties:
+        activityId:
+          type: string
+        products:
+          type: array
+          items:
+            type: string
+            format: uuid
+        message:
+          type: string
+      required:
+        - activityId
+        - products
+
+    CancelActivityRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+      required:
+        - reason
+
+    CancelActivityResponse:
+      type: object
+      properties:
+        cancelled:
+          type: boolean
+        message:
+          type: string
+      required:
+        - cancelled
+
+    # Event schemas (for async messaging)
+    InstrumentActionCompletion:
+      type: object
+      description: Event emitted when an action completes
+      properties:
+        actionName:
+          type: string
+        actionStatus:
+          type: string
+          enum: [success, failed]
+        timeBegin:
+          type: string
+          format: date-time
+        timeEnd:
+          type: string
+          format: date-time
+        statusMsg:
+          type: string
+        errorMsg:
+          type: string
+        correlation:
+          $ref: '#/components/schemas/Correlation'
+      required:
+        - actionName
+        - actionStatus
+        - timeBegin
+        - timeEnd
+
+    InstrumentActivityStatusChange:
+      type: object
+      description: Event emitted on activity state transitions
+      properties:
+        activityId:
+          type: string
+        activityName:
+          type: string
+        activityStatus:
+          type: string
+          enum:
+            - pending
+            - running
+            - completed
+            - failed
+            - cancelled
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        statusMsg:
+          type: string
+        errorMsg:
+          type: string
+        cancellationReason:
+          type: string
+        correlation:
+          $ref: '#/components/schemas/Correlation'
+      required:
+        - activityId
+        - activityName
+        - activityStatus

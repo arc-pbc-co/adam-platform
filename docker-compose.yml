@@ -194,6 +194,53 @@ services:
     networks:
       - adam-network
 
+  # ============================================================================
+  # INTERSECT Edge Services
+  # ============================================================================
+
+  # Simulated Instrument Controller - For development and testing
+  instrument-controller-sim:
+    build:
+      context: ./services/intersect-edge/instrument-controller-sim
+      dockerfile: Dockerfile
+    container_name: adam-instrument-controller-sim
+    environment:
+      NODE_ENV: development
+      PORT: 8080
+      PRINT_JOB_DURATION_MS: 30000
+      SINTER_CYCLE_DURATION_MS: 20000
+      DEPOWDER_DURATION_MS: 10000
+      INSPECTION_DURATION_MS: 15000
+      FAILURE_RATE: 0.05
+      PROGRESS_INTERVAL_MS: 2000
+      EVENT_CALLBACK_URL: http://api-gateway:3200/api/intersect/events
+    ports:
+      - "8081:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - adam-network
+
+  # INTERSECT Ambassador Proxy - Edge-to-cloud gateway
+  intersect-ambassador:
+    image: envoyproxy/envoy:v1.28-latest
+    container_name: adam-intersect-ambassador
+    ports:
+      - "8443:8443"
+      - "9901:9901"
+    volumes:
+      - ./services/intersect-edge/ambassador/envoy.yaml:/etc/envoy/envoy.yaml:ro
+      # Uncomment and configure for production with real certs
+      # - ./certs:/certs:ro
+    command: envoy -c /etc/envoy/envoy.yaml --log-level info
+    depends_on:
+      - instrument-controller-sim
+    networks:
+      - adam-network
+
 volumes:
   postgres_data:
   timescale_data:
