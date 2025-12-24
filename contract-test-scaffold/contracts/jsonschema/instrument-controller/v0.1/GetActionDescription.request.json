@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "required": [
+    "actionName"
+  ],
+  "properties": {
+    "actionName": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/GetActionDescription.request.json",
+  "title": "InstrumentController GetActionDescription request",
+  "additionalProperties": false
+}

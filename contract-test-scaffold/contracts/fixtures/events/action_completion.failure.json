@@ -1,0 +1,10 @@
+{
+  "eventName": "InstrumentActionCompletion",
+  "eventData": {
+    "actionName": "CALIBRATE",
+    "actionStatus": "ACTION_FAILURE",
+    "timeBegin": "2025-12-24T20:37:38Z",
+    "timeEnd": "2025-12-24T20:37:39Z",
+    "statusMsg": "Calibration target not found"
+  }
+}

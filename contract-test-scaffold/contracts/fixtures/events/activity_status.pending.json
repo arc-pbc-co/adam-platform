@@ -1,0 +1,8 @@
+{
+  "eventName": "InstrumentActivityStatusChange",
+  "eventData": {
+    "activityId": "act_0001",
+    "activityName": "BUILD",
+    "activityStatus": "ACTIVITY_PENDING"
+  }
+}

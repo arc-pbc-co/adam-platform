@@ -1,0 +1,16 @@
+{
+  "eventType": "adam.intersect.instrument_action_completion",
+  "occurredAt": "2025-12-24T20:37:38Z",
+  "correlation": {
+    "campaignId": "camp_123",
+    "experimentRunId": "run_456",
+    "traceId": "trace_789",
+    "instrumentControllerId": "controller_sim_01"
+  },
+  "payload": {
+    "actionName": "HOME",
+    "actionStatus": "ACTION_SUCCESS",
+    "timeBegin": "2025-12-24T20:37:38Z",
+    "timeEnd": "2025-12-24T20:37:39Z"
+  }
+}

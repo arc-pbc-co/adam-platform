@@ -1,0 +1,34 @@
+{
+  "type": "object",
+  "required": [
+    "actionName",
+    "actionStatus",
+    "timeBegin",
+    "timeEnd"
+  ],
+  "properties": {
+    "actionName": {
+      "type": "string"
+    },
+    "actionStatus": {
+      "type": "string",
+      "enum": [
+        "ACTION_SUCCESS",
+        "ACTION_FAILURE"
+      ]
+    },
+    "timeBegin": {
+      "$ref": "https://arc.example/schemas/common.json#/definitions/TimeStamp"
+    },
+    "timeEnd": {
+      "$ref": "https://arc.example/schemas/common.json#/definitions/TimeStamp"
+    },
+    "statusMsg": {
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/InstrumentActionCompletion.event.json",
+  "title": "InstrumentActionCompletion event data",
+  "additionalProperties": false
+}

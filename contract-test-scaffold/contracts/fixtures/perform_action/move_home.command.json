@@ -1,0 +1,9 @@
+{
+  "actionName": "HOME",
+  "actionOptions": [
+    {
+      "key": "speed",
+      "value": "fast"
+    }
+  ]
+}

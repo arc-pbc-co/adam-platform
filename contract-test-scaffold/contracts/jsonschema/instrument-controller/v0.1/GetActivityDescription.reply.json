@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "required": [
+    "activityDescription"
+  ],
+  "properties": {
+    "activityDescription": {
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/GetActivityDescription.reply.json",
+  "title": "InstrumentController GetActivityDescription reply",
+  "additionalProperties": false
+}

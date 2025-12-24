@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/adam/intersect-event-envelope/v1.json",
+  "title": "ADAM normalized event envelope for INTERSECT events (bridge output)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventType",
+    "occurredAt",
+    "correlation",
+    "payload"
+  ],
+  "properties": {
+    "eventType": {
+      "type": "string",
+      "enum": [
+        "adam.intersect.instrument_action_completion",
+        "adam.intersect.instrument_activity_status_change"
+      ]
+    },
+    "occurredAt": {
+      "$ref": "https://arc.example/schemas/common.json#/definitions/TimeStamp"
+    },
+    "correlation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "campaignId",
+        "experimentRunId",
+        "traceId"
+      ],
+      "properties": {
+        "campaignId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "experimentRunId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "traceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instrumentControllerId": {
+          "type": "string"
+        }
+      }
+    },
+    "payload": {
+      "oneOf": [
+        {
+          "$ref": "https://arc.example/schemas/instrument-controller/v0.1/InstrumentActionCompletion.event.json"
+        },
+        {
+          "$ref": "https://arc.example/schemas/instrument-controller/v0.1/InstrumentActivityStatusChange.event.json"
+        }
+      ]
+    }
+  }
+}

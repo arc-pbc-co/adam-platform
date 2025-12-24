@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "required": [
+    "actionNames"
+  ],
+  "properties": {
+    "actionNames": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "errorMsg": {
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/ListActions.reply.json",
+  "title": "InstrumentController ListActions reply",
+  "additionalProperties": false
+}

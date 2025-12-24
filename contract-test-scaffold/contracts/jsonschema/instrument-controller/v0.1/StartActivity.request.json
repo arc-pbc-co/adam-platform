@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "required": [
+    "activityName"
+  ],
+  "properties": {
+    "activityName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "activityOptions": {
+      "type": "array",
+      "items": {
+        "$ref": "https://arc.example/schemas/common.json#/definitions/KeyValString"
+      }
+    },
+    "activityDeadline": {
+      "$ref": "https://arc.example/schemas/common.json#/definitions/TimeStamp"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/StartActivity.request.json",
+  "title": "InstrumentController StartActivity request",
+  "additionalProperties": false
+}

@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "required": [
+    "eventName",
+    "eventData"
+  ],
+  "properties": {
+    "eventName": {
+      "type": "string",
+      "enum": [
+        "InstrumentActionCompletion",
+        "InstrumentActivityStatusChange"
+      ]
+    },
+    "eventData": {
+      "oneOf": [
+        {
+          "$ref": "InstrumentActionCompletion.event.json"
+        },
+        {
+          "$ref": "InstrumentActivityStatusChange.event.json"
+        }
+      ]
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/IntersectEventEnvelope.schema.json",
+  "title": "Simulator event envelope (eventName + eventData)",
+  "additionalProperties": false
+}

@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "required": [
+    "activityNames"
+  ],
+  "properties": {
+    "activityNames": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "errorMsg": {
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/ListActivities.reply.json",
+  "title": "InstrumentController ListActivities reply",
+  "additionalProperties": false
+}

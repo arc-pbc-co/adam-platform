@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "required": [
+    "activityName"
+  ],
+  "properties": {
+    "activityName": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/GetActivityDescription.request.json",
+  "title": "InstrumentController GetActivityDescription request",
+  "additionalProperties": false
+}

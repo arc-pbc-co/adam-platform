@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "required": [
+    "products"
+  ],
+  "properties": {
+    "products": {
+      "type": "array",
+      "items": {
+        "$ref": "https://arc.example/schemas/common.json#/definitions/UUID"
+      }
+    },
+    "errorMsg": {
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/GetActivityData.reply.json",
+  "title": "InstrumentController GetActivityData reply",
+  "additionalProperties": false
+}

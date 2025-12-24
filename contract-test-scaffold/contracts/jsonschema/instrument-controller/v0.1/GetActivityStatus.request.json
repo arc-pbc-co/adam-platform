@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "required": [
+    "activityId"
+  ],
+  "properties": {
+    "activityId": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/GetActivityStatus.request.json",
+  "title": "InstrumentController GetActivityStatus request",
+  "additionalProperties": false
+}

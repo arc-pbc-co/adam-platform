@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "required": [
+    "actionName"
+  ],
+  "properties": {
+    "actionName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actionOptions": {
+      "type": "array",
+      "items": {
+        "$ref": "https://arc.example/schemas/common.json#/definitions/KeyValString"
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/PerformAction.command.json",
+  "title": "InstrumentController PerformAction command",
+  "additionalProperties": false
+}

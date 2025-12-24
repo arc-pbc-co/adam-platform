@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "required": [
+    "actionDescription"
+  ],
+  "properties": {
+    "actionDescription": {
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/GetActionDescription.reply.json",
+  "title": "InstrumentController GetActionDescription reply",
+  "additionalProperties": false
+}

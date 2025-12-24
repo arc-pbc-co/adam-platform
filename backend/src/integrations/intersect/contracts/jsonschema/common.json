@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/common.json",
+  "title": "Common INTERSECT-aligned schema definitions",
+  "type": "object",
+  "definitions": {
+    "UUID": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "TimeStamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "KeyValString": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "value"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

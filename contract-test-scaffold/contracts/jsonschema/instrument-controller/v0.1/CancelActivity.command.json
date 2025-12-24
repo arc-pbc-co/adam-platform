@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "required": [
+    "activityId",
+    "reason"
+  ],
+  "properties": {
+    "activityId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/CancelActivity.command.json",
+  "title": "InstrumentController CancelActivity command",
+  "additionalProperties": false
+}

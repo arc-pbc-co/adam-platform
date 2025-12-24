@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "required": [
+    "activityId",
+    "activityName",
+    "activityStatus"
+  ],
+  "properties": {
+    "activityId": {
+      "type": "string"
+    },
+    "activityName": {
+      "type": "string"
+    },
+    "activityStatus": {
+      "type": "string",
+      "enum": [
+        "ACTIVITY_PENDING",
+        "ACTIVITY_IN_PROGRESS",
+        "ACTIVITY_CANCELED",
+        "ACTIVITY_COMPLETED",
+        "ACTIVITY_FAILED"
+      ]
+    },
+    "statusMsg": {
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/instrument-controller/v0.1/InstrumentActivityStatusChange.event.json",
+  "title": "InstrumentActivityStatusChange event data",
+  "additionalProperties": false
+}
