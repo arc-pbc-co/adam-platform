@@ -4,6 +4,7 @@ import hardwareRouter from './hardware';
 import agentsRouter from './agents';
 import usersRouter from './users';
 import authRouter from './auth';
+import intersectRouter from './intersect';
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/experiments', experimentsRouter);
 router.use('/hardware', hardwareRouter);
 router.use('/agents', agentsRouter);
 router.use('/users', usersRouter);
+router.use('/intersect', intersectRouter);
 
 export default router;

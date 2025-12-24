@@ -76,7 +76,7 @@ router.post('/events', async (req: Request, res: Response, next: NextFunction) =
  * GET /intersect/controllers
  * List registered instrument controllers
  */
-router.get('/controllers', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/controllers', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await db.query(
       `SELECT
@@ -366,7 +366,7 @@ router.post('/activities/:activityId/cancel', async (req: Request, res: Response
         }
       );
 
-      const result = await response.json();
+      const result = await response.json() as { cancelled?: boolean; message?: string };
 
       // Update local status
       await db.query(

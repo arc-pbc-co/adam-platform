@@ -31,6 +31,20 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(metricsMiddleware);
 
+// Root endpoint
+app.get('/', (_req, res) => {
+  res.json({
+    name: 'ADAM Platform API Gateway',
+    version: '1.0.0',
+    description: 'Autonomous Discovery and Advanced Manufacturing Platform',
+    endpoints: {
+      api: '/api',
+      health: '/health',
+      websocket: '/ws',
+    },
+  });
+});
+
 // Health check
 app.get('/health', (_req, res) => {
   res.json({

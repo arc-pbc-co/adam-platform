@@ -28,7 +28,7 @@ import {
   NormalizedAdamEvent,
   StartActivityResponse,
   ActivityStatusResponse,
-} from '../../../src/integrations/intersect';
+} from './intersect-types';
 
 /**
  * Configuration for the workflow adapter
@@ -97,7 +97,7 @@ export class IntersectWorkflowAdapter {
    */
   private setupEventHandlers(): void {
     // Handle normalized ADAM events
-    this.eventBridge.onNormalizedEvent(async (event) => {
+    this.eventBridge.subscribe(async (event: NormalizedAdamEvent) => {
       await this.handleNormalizedEvent(event);
     });
   }
@@ -106,28 +106,24 @@ export class IntersectWorkflowAdapter {
    * Handle normalized events from INTERSECT
    */
   private async handleNormalizedEvent(event: NormalizedAdamEvent): Promise<void> {
-    console.log(`[WorkflowAdapter] Received event: ${event.eventType}`, event.data);
+    console.log(`[WorkflowAdapter] Received event: ${event.eventType}`, event.payload);
 
     // Check if this is an activity status event
-    if (event.eventType === 'experiment.activity.status_change' && event.data.activityId) {
-      const pending = this.pendingSteps.get(event.data.activityId);
+    if (event.eventType === 'adam.intersect.instrument_activity_status_change') {
+      const payload = event.payload as { activityId: string; activityStatus: ActivityStatus; statusMsg?: string };
+      const pending = this.pendingSteps.get(payload.activityId);
 
       if (pending) {
-        const status = event.data.status as ActivityStatus;
+        const status = payload.activityStatus;
 
-        if (status === 'completed') {
+        if (status === 'ACTIVITY_COMPLETED') {
           // Fetch data products
           let dataProducts: string[] = [];
           try {
-            const correlation = await this.correlationStore.getActivityCorrelation(
-              event.data.activityId
-            );
+            const correlation = await this.correlationStore.findByActivityId(payload.activityId);
             if (correlation) {
-              const dataResponse = await this.gateway.getActivityData(
-                correlation.controllerId,
-                event.data.activityId
-              );
-              dataProducts = dataResponse.products;
+              // Note: getActivityData would need to be added to the gateway interface
+              // For now, we'll skip data product fetching
             }
           } catch (error) {
             console.error('Failed to fetch activity data products:', error);
@@ -135,20 +131,20 @@ export class IntersectWorkflowAdapter {
 
           pending.resolve({
             success: true,
-            activityId: event.data.activityId,
-            status: 'completed',
-            message: event.data.message,
+            activityId: payload.activityId,
+            status: 'ACTIVITY_COMPLETED',
+            message: payload.statusMsg,
             dataProducts,
           });
-          this.pendingSteps.delete(event.data.activityId);
-        } else if (status === 'failed' || status === 'cancelled') {
+          this.pendingSteps.delete(payload.activityId);
+        } else if (status === 'ACTIVITY_FAILED' || status === 'ACTIVITY_CANCELED') {
           pending.resolve({
             success: false,
-            activityId: event.data.activityId,
+            activityId: payload.activityId,
             status,
-            error: event.data.error || event.data.message,
+            error: payload.statusMsg,
           });
-          this.pendingSteps.delete(event.data.activityId);
+          this.pendingSteps.delete(payload.activityId);
         }
         // Running/pending status - keep waiting
       }
@@ -156,30 +152,93 @@ export class IntersectWorkflowAdapter {
   }
 
   /**
-   * Execute an experiment plan through INTERSECT
+   * Execute an experiment plan (single job) through INTERSECT
    */
   async executeExperimentPlan(
     plan: ExecutionPlan,
     experimentId: string,
     campaignId?: string
   ): Promise<StepExecutionResult> {
-    const correlation: Correlation = {
-      experimentRunId: experimentId,
-      campaignId,
-    };
+    // Map the execution plan to an INTERSECT activity
+    const activityMapping = this.mapPlanToActivity(plan);
 
     try {
-      // Use the gateway to execute the plan
-      const response = await this.gateway.executeExperimentPlan(plan, correlation);
+      const response = await this.gateway.startActivity(
+        activityMapping.controllerId,
+        activityMapping.activityName,
+        activityMapping.options,
+        this.calculateDeadline()
+      );
+
+      if (response.errorMsg) {
+        return {
+          success: false,
+          status: 'ACTIVITY_FAILED',
+          error: response.errorMsg,
+        };
+      }
+
+      // Store correlation
+      const correlation: Correlation = {
+        activityId: response.activityId,
+        campaignId: campaignId || '',
+        experimentRunId: experimentId,
+        stepId: plan.jobId,
+        controllerId: activityMapping.controllerId,
+        traceId: `trace_${experimentId}_${Date.now()}`,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      await this.correlationStore.save(correlation);
 
       // Wait for completion
       return this.waitForActivityCompletion(response.activityId, experimentId);
     } catch (error) {
       return {
         success: false,
-        status: 'failed',
+        status: 'ACTIVITY_FAILED',
         error: (error as Error).message,
       };
+    }
+  }
+
+  /**
+   * Map an ExecutionPlan to an INTERSECT activity
+   */
+  private mapPlanToActivity(plan: ExecutionPlan): {
+    controllerId: string;
+    activityName: string;
+    options: KeyValue[];
+  } {
+    const jobType = plan.jobType;
+
+    // Map job types to controllers and activities
+    switch (jobType) {
+      case 'print':
+        return {
+          controllerId: this.config.defaultControllerId,
+          activityName: 'print_job',
+          options: this.parametersToOptions(plan.parameters),
+        };
+      case 'sinter':
+        return {
+          controllerId: 'furnace-controller',
+          activityName: 'sinter_cycle',
+          options: this.parametersToOptions(plan.parameters),
+        };
+      case 'measure':
+      case 'analyze':
+        return {
+          controllerId: 'characterization-controller',
+          activityName: 'quality_inspection',
+          options: this.parametersToOptions(plan.parameters),
+        };
+      default:
+        return {
+          controllerId: 'simulated-controller',
+          activityName: 'generic_activity',
+          options: this.parametersToOptions(plan.parameters),
+        };
     }
   }
 
@@ -193,31 +252,45 @@ export class IntersectWorkflowAdapter {
     experimentId: string,
     campaignId?: string
   ): Promise<StepExecutionResult> {
-    const correlation: Correlation = {
-      experimentRunId: experimentId,
-      campaignId,
-    };
-
     // Determine activity type and controller from step
     const activityMapping = this.mapStepToActivity(step);
     if (!activityMapping) {
       return {
         success: false,
-        status: 'failed',
+        status: 'ACTIVITY_FAILED',
         error: `Cannot map step '${step.action}' to INTERSECT activity`,
       };
     }
 
     try {
       // Start the activity
-      const response = await this.gateway.startActivity({
-        controllerId: activityMapping.controllerId,
-        activityName: activityMapping.activityName,
+      const response = await this.gateway.startActivity(
+        activityMapping.controllerId,
+        activityMapping.activityName,
+        activityMapping.options,
+        this.calculateDeadline()
+      );
+
+      if (response.errorMsg) {
+        return {
+          success: false,
+          status: 'ACTIVITY_FAILED',
+          error: response.errorMsg,
+        };
+      }
+
+      // Store correlation
+      const correlation: Correlation = {
+        activityId: response.activityId,
+        campaignId: campaignId || '',
         experimentRunId: experimentId,
-        campaignId,
-        activityOptions: activityMapping.options,
-        deadline: this.calculateDeadline(),
-      });
+        stepId: `phase_${phaseIndex}_step_${stepIndex}`,
+        controllerId: activityMapping.controllerId,
+        traceId: `trace_${experimentId}_${Date.now()}`,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      await this.correlationStore.save(correlation);
 
       // Wait for completion
       return this.waitForActivityCompletion(
@@ -229,7 +302,7 @@ export class IntersectWorkflowAdapter {
     } catch (error) {
       return {
         success: false,
-        status: 'failed',
+        status: 'ACTIVITY_FAILED',
         error: (error as Error).message,
       };
     }
@@ -242,22 +315,17 @@ export class IntersectWorkflowAdapter {
     actionName: string,
     controllerId: string,
     options: KeyValue[],
-    experimentId: string
+    _experimentId: string
   ): Promise<{ success: boolean; message?: string; error?: string }> {
-    const idempotencyKey = `${experimentId}_${actionName}_${Date.now()}`;
-
     try {
-      const response = await this.gateway.performAction({
+      const response = await this.gateway.performAction(
         controllerId,
         actionName,
-        actionOptions: options,
-        idempotencyKey,
-        correlation: { experimentRunId: experimentId },
-      });
+        options
+      );
 
       return {
         success: response.accepted,
-        message: response.message,
       };
     } catch (error) {
       return {
@@ -334,18 +402,11 @@ export class IntersectWorkflowAdapter {
       pending.resolve({
         success: false,
         activityId,
-        status: 'cancelled',
+        status: 'ACTIVITY_CANCELED',
         message: reason,
       });
       this.pendingSteps.delete(activityId);
     }
-  }
-
-  /**
-   * List available controllers
-   */
-  async listControllers(): Promise<any[]> {
-    return this.gateway.listControllers();
   }
 
   // ============================================================================
@@ -374,7 +435,7 @@ export class IntersectWorkflowAdapter {
           resolve({
             success: false,
             activityId,
-            status: 'failed',
+            status: 'ACTIVITY_FAILED',
             error: 'Activity timed out',
           });
         }

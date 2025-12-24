@@ -4,7 +4,7 @@ import { db } from '../database';
 import { publishEvent } from '../messaging/nats';
 import { logger } from '../utils/logger';
 import Joi from 'joi';
-import { authenticateToken, optionalAuth, getUserId, AuthenticatedRequest } from '../middleware/auth';
+import { optionalAuth, getUserId, AuthenticatedRequest } from '../middleware/auth';
 
 const router = Router();
 

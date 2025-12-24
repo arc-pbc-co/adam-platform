@@ -55,7 +55,7 @@ services:
     environment:
       QDRANT__SERVICE__GRPC_PORT: 6334
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:6333/health"]
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/6333 && echo -e \"GET / HTTP/1.0\\r\\n\\r\\n\" >&3 && cat <&3 | grep -q qdrant'"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -104,6 +104,8 @@ services:
       context: ./backend/nova
       dockerfile: Dockerfile.orchestrator
     container_name: adam-graph-orchestrator
+    env_file:
+      - .env.backend
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://nova:nova_dev_password@postgres:5432/nova
@@ -111,8 +113,6 @@ services:
       VECTOR_DB_URL: http://qdrant:6333
       NATS_URL: nats://nats:4222
       REDIS_URL: redis://redis:6379
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
       LOG_LEVEL: debug
     ports:
       - "3100:3100"
@@ -127,9 +127,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - ./backend/nova:/app
-      - /app/node_modules
+    # Note: Removed volume mounts to use Docker-built code
+    # For live reload during development, run locally instead
     networks:
       - adam-network
 
@@ -155,9 +154,8 @@ services:
       - postgres
       - nats
       - redis
-    volumes:
-      - ./backend/api-gateway:/app
-      - /app/node_modules
+    # Note: Removed volume mounts to use Docker-built code
+    # For live reload during development, run locally instead
     networks:
       - adam-network
 
