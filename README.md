@@ -1,14 +1,8 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
 # Arc Impact - ADAM Platform
 
 **Autonomous Discovery and Advanced Manufacturing**
 
 The world's first end-to-end AI materials discovery through to advanced manufacturing platform. ADAM is an AI orchestrator that controls physical hardware (Desktop Metal binder jetting printers) to run autonomous materials experiments in closed loops.
-
-View your app in AI Studio: https://ai.studio/apps/drive/1Jsp65dDojt1dmaVdRs-HW2Ebu4ucryKL
 
 ## Features
 
