@@ -1,0 +1,358 @@
+# ============================================================================
+# INTERSECT Service Mesh Configuration (Istio)
+#
+# Provides:
+# - mTLS for secure edge-to-cloud communication
+# - Traffic management with retries and circuit breakers
+# - Observability with distributed tracing
+# - Fine-grained access control
+# ============================================================================
+
+---
+# Namespace for INTERSECT edge services
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: intersect-edge
+  labels:
+    istio-injection: enabled
+---
+# Namespace for INTERSECT cloud services
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: intersect-cloud
+  labels:
+    istio-injection: enabled
+
+---
+# ============================================================================
+# Peer Authentication - Enforce mTLS
+# ============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: intersect-mtls
+  namespace: intersect-edge
+spec:
+  mtls:
+    mode: STRICT
+
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: intersect-mtls
+  namespace: intersect-cloud
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# ============================================================================
+# Authorization Policy - Control access between services
+# ============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: instrument-controller-access
+  namespace: intersect-edge
+spec:
+  selector:
+    matchLabels:
+      app: instrument-controller
+  rules:
+    # Allow API Gateway to call controllers
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/intersect-cloud/sa/api-gateway
+      to:
+        - operation:
+            methods: ["GET", "POST"]
+            paths:
+              - "/health"
+              - "/actions/*"
+              - "/activities/*"
+    # Allow Supervisor to check health
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/intersect-cloud/sa/supervisor
+      to:
+        - operation:
+            methods: ["GET"]
+            paths:
+              - "/health"
+
+---
+# ============================================================================
+# Virtual Service - Traffic routing with retries
+# ============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: instrument-controllers
+  namespace: intersect-edge
+spec:
+  hosts:
+    - instrument-controller-dm
+    - instrument-controller-sim
+    - instrument-controller-robot
+    - instrument-controller-furnace
+    - instrument-controller-characterization
+  http:
+    # Activity endpoints - long timeout, limited retries
+    - match:
+        - uri:
+            prefix: /activities/
+      retries:
+        attempts: 2
+        perTryTimeout: 60s
+        retryOn: 5xx,reset,connect-failure,retriable-4xx
+      timeout: 180s
+      route:
+        - destination:
+            host: instrument-controller
+            port:
+              number: 8080
+
+    # Action endpoints - shorter timeout, more retries
+    - match:
+        - uri:
+            prefix: /actions/
+      retries:
+        attempts: 3
+        perTryTimeout: 30s
+        retryOn: 5xx,reset,connect-failure,retriable-4xx
+      timeout: 90s
+      route:
+        - destination:
+            host: instrument-controller
+            port:
+              number: 8080
+
+    # Health endpoints - fast timeout
+    - match:
+        - uri:
+            exact: /health
+      retries:
+        attempts: 1
+        perTryTimeout: 5s
+      timeout: 10s
+      route:
+        - destination:
+            host: instrument-controller
+            port:
+              number: 8080
+
+---
+# ============================================================================
+# Destination Rule - Circuit breaker and connection pool
+# ============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: instrument-controller-circuit-breaker
+  namespace: intersect-edge
+spec:
+  host: "*.intersect-edge.svc.cluster.local"
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 30s
+      http:
+        h2UpgradePolicy: DO_NOT_UPGRADE
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 10
+        maxRetries: 3
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 50
+      minHealthPercent: 30
+
+---
+# ============================================================================
+# Service Entry - External instrument connections
+# ============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: desktop-metal-api
+  namespace: intersect-edge
+spec:
+  hosts:
+    - api.desktopmetal.com
+  location: MESH_EXTERNAL
+  ports:
+    - number: 443
+      name: https
+      protocol: HTTPS
+  resolution: DNS
+
+---
+# ============================================================================
+# Gateway - Ingress for external access
+# ============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: intersect-gateway
+  namespace: intersect-cloud
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: MUTUAL
+        credentialName: intersect-edge-cert
+      hosts:
+        - "intersect.adam-platform.local"
+        - "*.intersect.adam-platform.local"
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: intersect-api
+  namespace: intersect-cloud
+spec:
+  hosts:
+    - "intersect.adam-platform.local"
+  gateways:
+    - intersect-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /api/intersect/
+      route:
+        - destination:
+            host: api-gateway
+            port:
+              number: 3000
+
+---
+# ============================================================================
+# Request Authentication - JWT validation
+# ============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: intersect-jwt
+  namespace: intersect-cloud
+spec:
+  selector:
+    matchLabels:
+      app: api-gateway
+  jwtRules:
+    - issuer: "https://auth.adam-platform.local"
+      jwksUri: "https://auth.adam-platform.local/.well-known/jwks.json"
+      audiences:
+        - "intersect-api"
+      forwardOriginalToken: true
+
+---
+# ============================================================================
+# Telemetry - Distributed tracing configuration
+# ============================================================================
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: intersect-tracing
+  namespace: intersect-edge
+spec:
+  tracing:
+    - providers:
+        - name: zipkin
+      randomSamplingPercentage: 100.0
+      customTags:
+        controller_id:
+          header:
+            name: x-controller-id
+        activity_id:
+          header:
+            name: x-activity-id
+        experiment_run_id:
+          header:
+            name: x-experiment-run-id
+
+---
+# ============================================================================
+# Service Accounts
+# ============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: api-gateway
+  namespace: intersect-cloud
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: supervisor
+  namespace: intersect-cloud
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent
+  namespace: intersect-cloud
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: instrument-controller
+  namespace: intersect-edge
+
+---
+# ============================================================================
+# Network Policy - Additional defense in depth
+# ============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: instrument-controller-policy
+  namespace: intersect-edge
+spec:
+  podSelector:
+    matchLabels:
+      app: instrument-controller
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from cloud services via mesh
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: intersect-cloud
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Allow Istio sidecar
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+  egress:
+    # Allow to instrument hardware
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 443
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53

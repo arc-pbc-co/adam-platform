@@ -44,6 +44,37 @@ export {
   EventBridgeConfig,
 } from './events/IntersectEventBridge';
 
+// Orchestration (Scheduler-Agent-Supervisor pattern)
+export {
+  // Scheduler
+  IScheduler,
+  InMemoryScheduler,
+  DatabaseScheduler,
+  createScheduler,
+  ScheduledTask,
+  ScheduleTaskParams,
+  TaskQuery,
+  TaskStats,
+  TaskStatus,
+  TaskPriority,
+  // Agent
+  Agent,
+  AgentPool,
+  createAgent,
+  createAgentPool,
+  AgentConfig,
+  AgentMetrics,
+  TaskExecution,
+  // Supervisor
+  Supervisor,
+  createSupervisor,
+  SupervisorConfig,
+  SupervisorMetrics,
+  EscalationEvent,
+  EscalationHandler,
+  ControllerHealthStatus,
+} from './orchestration';
+
 // Re-export key types for convenience
 export type {
   Correlation,
