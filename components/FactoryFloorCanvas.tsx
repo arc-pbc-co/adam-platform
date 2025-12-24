@@ -26,7 +26,9 @@ import {
   Timer,
   Droplets,
   Settings2,
+  ShoppingCart,
 } from 'lucide-react';
+import { SupplyOrderForm } from './SupplyOrderForm';
 
 interface PrinterTelemetry {
   jobProgress: number;
@@ -230,6 +232,10 @@ export function FactoryFloorCanvas({ onPrinterSelect }: FactoryFloorCanvasProps)
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+
+  // Supply Order Form state
+  const [showSupplyOrderForm, setShowSupplyOrderForm] = useState(false);
+  const [selectedMaterialForOrder, setSelectedMaterialForOrder] = useState<Material | undefined>(undefined);
 
   // Cost calculator state
   const [calcParams, setCalcParams] = useState({
@@ -730,6 +736,17 @@ export function FactoryFloorCanvas({ onPrinterSelect }: FactoryFloorCanvasProps)
                     </option>
                   ))}
                 </select>
+                {/* Supply Order Button */}
+                <button
+                  onClick={() => {
+                    setSelectedMaterialForOrder(undefined);
+                    setShowSupplyOrderForm(true);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-lg text-sm font-medium transition-all"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  Order Supplies
+                </button>
               </div>
 
               {/* Materials List */}
@@ -762,6 +779,17 @@ export function FactoryFloorCanvas({ onPrinterSelect }: FactoryFloorCanvasProps)
                         <div className="text-white font-medium">{material.properties.density} g/cm³</div>
                       </div>
                     </div>
+                    {/* Quick Order Button */}
+                    <button
+                      onClick={() => {
+                        setSelectedMaterialForOrder(material);
+                        setShowSupplyOrderForm(true);
+                      }}
+                      className="mt-2 w-full flex items-center justify-center gap-1.5 px-2 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 rounded text-[10px] font-medium transition-colors"
+                    >
+                      <ShoppingCart className="w-3 h-3" />
+                      Quick Order
+                    </button>
                   </div>
                 ))}
               </div>
@@ -1240,6 +1268,14 @@ export function FactoryFloorCanvas({ onPrinterSelect }: FactoryFloorCanvasProps)
           )}
         </AnimatePresence>
       </div>
+
+      {/* Supply Order Form Modal */}
+      <SupplyOrderForm
+        isOpen={showSupplyOrderForm}
+        onClose={() => setShowSupplyOrderForm(false)}
+        materials={materials}
+        initialMaterial={selectedMaterialForOrder}
+      />
     </div>
   );
 }

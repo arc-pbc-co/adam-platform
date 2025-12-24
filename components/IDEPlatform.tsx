@@ -28,10 +28,12 @@ import {
   X,
   LogOut,
   Shield,
+  BarChart3,
 } from 'lucide-react';
 import { FlowchartCanvas } from './FlowchartCanvas';
 import { FactoryFloorCanvas } from './FactoryFloorCanvas';
 import type { AgentNodeData } from './AgentNode';
+import { WorkflowAnalysisDashboard } from './WorkflowAnalysisDashboard';
 
 interface User {
   username: string;
@@ -47,14 +49,21 @@ type LeftTab = 'chat' | 'experiments' | 'config';
 type BottomTab = 'terminal' | 'debug';
 type CanvasView = 'agents' | 'hardware';
 
-// Mock experiments list
-const experiments = [
+// Initial experiments list
+const initialExperiments = [
   { id: 'EXP-2024-1251', name: 'Fe-Co Alloy Optimization', status: 'running', progress: 67 },
   { id: 'EXP-2024-1250', name: 'MnBi Permanent Magnets', status: 'pending', progress: 0 },
   { id: 'EXP-2024-1249', name: 'NASICON Electrolyte Grid', status: 'completed', progress: 100 },
   { id: 'EXP-2024-1248', name: 'AlSi10Mg Heat Treatment', status: 'completed', progress: 100 },
   { id: 'EXP-2024-1247', name: 'Ti-6Al-4V Microstructure', status: 'failed', progress: 45 },
 ];
+
+interface Experiment {
+  id: string;
+  name: string;
+  status: string;
+  progress: number;
+}
 
 // Mock chat messages
 const initialMessages = [
@@ -98,7 +107,10 @@ export function IDEPlatform({ onBack, user }: IDEPlatformProps) {
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
   const [bottomPanelCollapsed, setBottomPanelCollapsed] = useState(false);
   const [selectedNode, setSelectedNode] = useState<AgentNodeData | null>(null);
-  const [selectedExperiment, setSelectedExperiment] = useState(experiments[0]);
+  const [experiments, setExperiments] = useState<Experiment[]>(initialExperiments);
+  const [selectedExperiment, setSelectedExperiment] = useState<Experiment>(initialExperiments[0]);
+  const [showNewExperimentModal, setShowNewExperimentModal] = useState(false);
+  const [newExperimentName, setNewExperimentName] = useState('');
   const [chatMessages, setChatMessages] = useState(initialMessages);
   const [chatInput, setChatInput] = useState('');
   const [terminalLines, setTerminalLines] = useState<string[]>([
@@ -116,6 +128,7 @@ export function IDEPlatform({ onBack, user }: IDEPlatformProps) {
     '→ Simulation Agent: Running...',
   ]);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showAnalysisDashboard, setShowAnalysisDashboard] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const terminalEndRef = useRef<HTMLDivElement>(null);
@@ -144,31 +157,126 @@ export function IDEPlatform({ onBack, user }: IDEPlatformProps) {
     return () => clearInterval(interval);
   }, []);
 
-  const handleSendMessage = () => {
-    if (!chatInput.trim()) return;
+  const [isExecuting, setIsExecuting] = useState(false);
 
+  // Check if input suggests an experiment execution
+  const isExperimentCommand = (text: string): boolean => {
+    const keywords = ['run', 'execute', 'start', 'init', 'experiment', 'optimize', 'test', 'design', 'create'];
+    const lower = text.toLowerCase();
+    return keywords.some(keyword => lower.includes(keyword));
+  };
+
+  // Run execution loop simulation
+  const runExecutionLoop = async (experimentName: string) => {
+    setIsExecuting(true);
+
+    const phases = [
+      { agent: 'Planning Agent', steps: ['Parsing experiment parameters...', 'Validating material constraints...', 'Generating DOE matrix...', 'Risk assessment: R1 (Auto-approved)'], duration: 600 },
+      { agent: 'Design Agent', steps: ['Parametrizing composition...', 'Calculating binder saturation: 55-72%', 'Layer thickness optimization: 50μm', 'Generated 12 print profiles'], duration: 500 },
+      { agent: 'Simulation Agent', steps: ['Initializing Live Sinter™...', 'Running thermal simulation...', 'ML confidence scoring: 94.2%', 'Microstructure prediction complete'], duration: 800 },
+      { agent: 'Controller Agent', steps: ['Querying fleet availability...', 'Selected: X25Pro-03 (idle)', 'Dispatching print job...', 'Job queued successfully'], duration: 400 },
+      { agent: 'Analyzer Agent', steps: ['Monitoring job progress...', 'Estimated completion: 4.2 hours', 'Feedback loop initialized', 'Ready for next iteration'], duration: 500 },
+    ];
+
+    // Initial response
+    setChatMessages(prev => [...prev, {
+      id: prev.length + 1,
+      role: 'assistant' as const,
+      content: `🚀 **INITIATING EXPERIMENT:** ${experimentName}\n\nStarting multi-agent orchestration workflow...`,
+      timestamp: new Date(),
+    }]);
+
+    setTerminalLines(prev => [...prev, '', `$ experiment run "${experimentName}"`, '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━']);
+
+    await new Promise(r => setTimeout(r, 500));
+
+    // Run through each phase
+    for (const phase of phases) {
+      setTerminalLines(prev => [...prev, ``, `▶ ${phase.agent} :: STARTED`]);
+
+      for (const step of phase.steps) {
+        await new Promise(r => setTimeout(r, phase.duration / phase.steps.length));
+        setTerminalLines(prev => [...prev, `  → ${step}`]);
+      }
+
+      setTerminalLines(prev => [...prev, `  ✓ ${phase.agent} complete`]);
+      await new Promise(r => setTimeout(r, 200));
+    }
+
+    // Final summary
+    const expId = `EXP-2024-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    setTerminalLines(prev => [...prev,
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '✅ WORKFLOW COMPLETE',
+      `   Experiment ID: ${expId}`,
+      '   Print Jobs: 12',
+      '   ETA: 4.2 hours',
+      '   Confidence: 94.2%',
+      ''
+    ]);
+
+    setChatMessages(prev => [...prev, {
+      id: prev.length + 1,
+      role: 'assistant' as const,
+      content: `✅ **WORKFLOW COMPLETE**
+
+**Experiment ID:** ${expId}
+**Status:** Running on hardware fleet
+
+**Summary:**
+• Print Jobs Dispatched: 12
+• Selected Printer: X25Pro-03
+• Estimated Completion: 4.2 hours
+• ML Confidence Score: 94.2%
+
+The workflow is now visible in the canvas. Monitor progress in the terminal or switch to Hardware view to see fleet status.`,
+      timestamp: new Date(),
+    }]);
+
+    setIsExecuting(false);
+  };
+
+  const handleSendMessage = async () => {
+    if (!chatInput.trim() || isExecuting) return;
+
+    const userInput = chatInput.trim();
     const newMessage = {
       id: chatMessages.length + 1,
       role: 'user' as const,
-      content: chatInput,
+      content: userInput,
       timestamp: new Date(),
     };
 
     setChatMessages((prev) => [...prev, newMessage]);
     setChatInput('');
 
-    // Simulate AI response
+    // Check if this is an experiment command
+    if (isExperimentCommand(userInput)) {
+      const experimentName = userInput.length > 50 ? userInput.substring(0, 50) + '...' : userInput;
+      await runExecutionLoop(experimentName);
+      return;
+    }
+
+    // Regular response for non-experiment queries
     setTimeout(() => {
       setChatMessages((prev) => [
         ...prev,
         {
           id: prev.length + 1,
           role: 'assistant' as const,
-          content: 'I understand. Let me analyze that and update the experiment parameters accordingly. The changes will be reflected in the workflow canvas.',
+          content: `I can help with that. To run an experiment, try commands like:
+
+• "Run Fe-Co alloy optimization"
+• "Design a NASICON electrolyte experiment"
+• "Execute high-strength steel test"
+
+Or type **help** for more commands.`,
           timestamp: new Date(),
         },
       ]);
-    }, 1500);
+    }, 800);
   };
 
   const getStatusColor = (status: string) => {
@@ -184,6 +292,36 @@ export function IDEPlatform({ onBack, user }: IDEPlatformProps) {
       default:
         return 'bg-gray-500';
     }
+  };
+
+  const handleCreateExperiment = async () => {
+    if (!newExperimentName.trim()) return;
+
+    const newExp: Experiment = {
+      id: `EXP-2024-${Math.floor(1000 + Math.random() * 9000)}`,
+      name: newExperimentName.trim(),
+      status: 'running',
+      progress: 0,
+    };
+
+    // Add to experiments list
+    setExperiments(prev => [newExp, ...prev]);
+    setSelectedExperiment(newExp);
+    setShowNewExperimentModal(false);
+    setNewExperimentName('');
+
+    // Switch to chat tab and run the experiment
+    setLeftTab('chat');
+
+    // Trigger the execution loop
+    await runExecutionLoop(newExp.name);
+
+    // Update experiment status after completion
+    setExperiments(prev =>
+      prev.map(exp =>
+        exp.id === newExp.id ? { ...exp, status: 'running', progress: 67 } : exp
+      )
+    );
   };
 
   return (
@@ -260,6 +398,13 @@ export function IDEPlatform({ onBack, user }: IDEPlatformProps) {
           <button className="p-1.5 hover:bg-[#2a2a2a] rounded transition-colors relative">
             <Bell className="w-4 h-4 text-gray-400" />
             <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
+          </button>
+          <button
+            onClick={() => setShowAnalysisDashboard(true)}
+            className="p-1.5 hover:bg-[#2a2a2a] rounded transition-colors"
+            title="Workflow Analysis"
+          >
+            <BarChart3 className="w-4 h-4 text-gray-400" />
           </button>
           <button className="p-1.5 hover:bg-[#2a2a2a] rounded transition-colors">
             <Settings className="w-4 h-4 text-gray-400" />
@@ -474,7 +619,10 @@ export function IDEPlatform({ onBack, user }: IDEPlatformProps) {
                       ))}
                     </div>
                     <div className="p-3 border-t border-[#2a2a2a]">
-                      <button className="w-full flex items-center justify-center gap-2 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-sm font-medium transition-colors">
+                      <button
+                        onClick={() => setShowNewExperimentModal(true)}
+                        className="w-full flex items-center justify-center gap-2 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-sm font-medium transition-colors"
+                      >
                         <Plus className="w-4 h-4" />
                         New Experiment
                       </button>
@@ -744,6 +892,104 @@ export function IDEPlatform({ onBack, user }: IDEPlatformProps) {
           <span className="text-yellow-400">Warning: 12</span>
         </div>
       </footer>
+
+      {/* New Experiment Modal */}
+      <AnimatePresence>
+        {showNewExperimentModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
+            onClick={() => setShowNewExperimentModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+              className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg w-full max-w-md p-6 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold">New Experiment</h2>
+                <button
+                  onClick={() => setShowNewExperimentModal(false)}
+                  className="p-1 hover:bg-[#2a2a2a] rounded transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">
+                    Experiment Name / Hypothesis
+                  </label>
+                  <textarea
+                    value={newExperimentName}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNewExperimentName(e.target.value)}
+                    placeholder="e.g., Fe-Co alloy with optimized grain structure achieves 90% of NdFeB performance"
+                    className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 resize-none"
+                    rows={3}
+                    autoFocus
+                    onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleCreateExperiment();
+                      }
+                    }}
+                  />
+                </div>
+
+                <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+                  <div className="text-xs text-gray-500 mb-2">What happens next:</div>
+                  <ul className="text-sm text-gray-400 space-y-1">
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                      Planning Agent analyzes & creates DOE matrix
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                      Design Agent generates print profiles
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                      Simulation Agent runs Live Sinter™
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
+                      Controller Agent dispatches to printers
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setShowNewExperimentModal(false)}
+                    className="flex-1 py-2.5 border border-[#2a2a2a] rounded-lg text-gray-400 hover:text-white hover:border-gray-500 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreateExperiment}
+                    disabled={!newExperimentName.trim()}
+                    className="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Play className="w-4 h-4" />
+                    Start Experiment
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Workflow Analysis Dashboard */}
+      <WorkflowAnalysisDashboard
+        isOpen={showAnalysisDashboard}
+        onClose={() => setShowAnalysisDashboard(false)}
+      />
     </div>
   );
 }

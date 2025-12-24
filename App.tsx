@@ -593,11 +593,9 @@ const App = () => {
             <div className="relative">
                 {/* The Terminal Interface */}
                 <div className="sticky top-24">
-                    <ApiKeyGate>
-                        <AdamTerminal />
-                    </ApiKeyGate>
+                    <AdamTerminal />
                     <p className="font-mono text-xs text-arc-muted text-center mt-4">
-                        * Live simulation of ADAM's reasoning engine. Try asking: "Design a high-strength steel experiment."
+                        * Live simulation of ADAM's reasoning engine. Try: "Run Fe-Co alloy optimization experiment"
                     </p>
                 </div>
             </div>

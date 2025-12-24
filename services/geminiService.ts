@@ -1,5 +1,12 @@
 import { GoogleGenAI } from "@google/genai";
 
+// Vite environment variable type
+declare global {
+  interface ImportMeta {
+    env: Record<string, string | undefined>;
+  }
+}
+
 const ADAM_SYSTEM_INSTRUCTION = `
 You are ADAM (Autonomous Discovery and Advanced Manufacturing), the AI Orchestrator for Arc Impact.
 Your role is to manage the end-to-end materials discovery and production loop using Desktop Metal binder jetting printers (Shop System, P-1, X25 Pro, X160 Pro).
@@ -27,12 +34,13 @@ export const sendMessageToAdam = async (
   message: string,
   history: { role: string; parts: { text: string }[] }[]
 ): Promise<string> => {
-  // Safe access to API Key accounting for browser environments
-  const apiKey = typeof process !== 'undefined' ? process.env?.API_KEY : undefined;
+  // Safe access to API Key - Vite uses import.meta.env
+  const apiKey = import.meta.env?.VITE_GEMINI_API_KEY ||
+                 (typeof process !== 'undefined' ? process.env?.API_KEY : undefined);
 
   if (!apiKey || apiKey === 'PLACEHOLDER_API_KEY') {
-    console.error("Critical: API Key is missing in sendMessageToAdam. User should have been gated.");
-    return "ERROR: SYSTEM OFFLINE. API KEY MISSING. Please reload and authenticate.";
+    console.error("Critical: API Key is missing in sendMessageToAdam.");
+    return "ADAM CORE: API connection unavailable. Use experiment commands like 'Run Fe-Co alloy optimization' to trigger the execution demo.";
   }
 
   try {

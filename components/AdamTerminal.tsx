@@ -182,7 +182,9 @@ Type "status" to check job progress.`
   };
 
   const handleSend = async () => {
+    console.log('handleSend called, input:', input);
     const trimmedInput = input.trim();
+    console.log('trimmedInput:', trimmedInput, 'isLoading:', isLoading, 'isExecuting:', isExecuting);
     if (!trimmedInput || isLoading || isExecuting) return;
 
     if (trimmedInput.length > 2000) {
