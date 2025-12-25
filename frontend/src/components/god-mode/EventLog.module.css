@@ -1,0 +1,324 @@
+/**
+ * EventLog Styles
+ * Uses skill-compatible design tokens with augmented-ui styling
+ */
+
+.log {
+  /* Augmented UI configuration for tl-clip border */
+  --aug-border-all: 1px;
+  --aug-border-bg: var(--border-subtle);
+  --aug-tl: var(--aug-clip-md);
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-panel);
+  position: relative;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-1) var(--space-4);
+  background: var(--bg-secondary);
+  border-bottom: var(--border-thin) solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.count {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Quick filter buttons in header */
+.quickFilters {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.quickFilter {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-mono);
+  font-size: 9px;
+}
+
+.quickFilter:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-default);
+}
+
+.quickFilter.disabled {
+  opacity: 0.4;
+  background: transparent;
+}
+
+.quickFilter .filterCount {
+  font-weight: 600;
+}
+
+.filterToggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.filterToggle:hover {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+}
+
+/* Expanded filter panel */
+.filterPanel {
+  background: var(--bg-secondary);
+  border-bottom: var(--border-thin) solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.filterOptions {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+}
+
+.filterOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: var(--text-xs);
+}
+
+.filterCheckbox {
+  width: 12px;
+  height: 12px;
+  accent-color: var(--accent-primary);
+}
+
+.filterLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.filterBadge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 1px 4px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+}
+
+/* Entries container */
+.entries {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+}
+
+/* Individual entry */
+.entry {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-bottom: var(--border-thin) solid var(--border-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.entry:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.time {
+  flex-shrink: 0;
+  width: 70px;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.type {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 70px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.typeIcon {
+  display: flex;
+  align-items: center;
+}
+
+/* Event type colors */
+.type.info,
+.quickFilter.info,
+.filterLabel.info {
+  color: var(--accent-primary);
+}
+
+.type.success,
+.quickFilter.success,
+.filterLabel.success {
+  color: var(--accent-secondary);
+}
+
+.type.warning,
+.quickFilter.warning,
+.filterLabel.warning {
+  color: var(--accent-warning);
+}
+
+.type.error,
+.quickFilter.error,
+.filterLabel.error {
+  color: var(--accent-danger);
+}
+
+/* Source styling */
+.source {
+  flex-shrink: 0;
+  width: 120px;
+  font-size: var(--text-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+/* Source-specific colors */
+.source--nova {
+  color: var(--accent-purple);
+}
+
+.source--printer {
+  color: var(--accent-primary);
+}
+
+.source--campaign {
+  color: var(--accent-secondary);
+}
+
+.source--system {
+  color: var(--text-secondary);
+}
+
+/* Nova source gets special treatment */
+.entry.source--nova {
+  border-left: 2px solid var(--accent-purple);
+  padding-left: calc(var(--space-2) - 2px);
+}
+
+.entry.source--nova .source {
+  color: var(--accent-purple);
+  text-shadow: 0 0 8px var(--accent-purple);
+}
+
+.message {
+  flex: 1;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Alternate row styling */
+.entry:nth-child(even) {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Highlight new entries briefly */
+@keyframes highlightEntry {
+  0% {
+    background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+.entry:first-child {
+  animation: highlightEntry 1s ease-out;
+}
+
+/* Scroll to bottom indicator */
+.scrollIndicator {
+  position: absolute;
+  bottom: var(--space-2);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  background: var(--bg-elevated);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-full);
+  color: var(--accent-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--glow-primary);
+  transition: all var(--transition-fast);
+  z-index: 10;
+}
+
+.scrollIndicator:hover {
+  background: color-mix(in srgb, var(--accent-primary) 20%, var(--bg-elevated));
+}

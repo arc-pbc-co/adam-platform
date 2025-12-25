@@ -1,0 +1,64 @@
+/**
+ * Panel Styles
+ * Augmented-ui integration for SC2-style clipped panels
+ */
+
+.panel {
+  --aug-border-all: 1px;
+  --aug-border-bg: var(--border-subtle);
+  --aug-tl: var(--aug-clip-md);
+  --aug-br: var(--aug-clip-md);
+  background: var(--bg-panel);
+  backdrop-filter: blur(8px);
+  transition: all var(--transition-normal);
+}
+
+.panel--active {
+  --aug-border-bg: var(--accent-primary);
+}
+
+.panel--success {
+  --aug-border-bg: var(--accent-secondary);
+}
+
+.panel--warning {
+  --aug-border-bg: var(--accent-warning);
+}
+
+.panel--danger {
+  --aug-border-bg: var(--accent-danger);
+}
+
+.panel--glow {
+  box-shadow: var(--glow-primary);
+}
+
+.panel--active.panel--glow {
+  box-shadow: var(--glow-primary);
+}
+
+.panel--success.panel--glow {
+  box-shadow: var(--glow-success);
+}
+
+.panel--warning.panel--glow {
+  box-shadow: var(--glow-warning);
+}
+
+.panel--danger.panel--glow {
+  box-shadow: var(--glow-danger);
+}
+
+.panel__header {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.panel__content {
+  padding: 1rem;
+}

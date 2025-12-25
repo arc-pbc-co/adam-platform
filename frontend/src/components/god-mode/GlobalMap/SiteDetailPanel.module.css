@@ -1,0 +1,229 @@
+/**
+ * SiteDetailPanel Styles
+ */
+
+.panel {
+  background: linear-gradient(
+    180deg,
+    var(--god-steel-800) 0%,
+    var(--god-steel-850) 100%
+  );
+  border: var(--border-thin) solid var(--god-steel-700);
+  padding: var(--space-3);
+  min-height: 240px;
+}
+
+.panel.selected {
+  border-color: var(--god-vespene-500);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+}
+
+/* Empty state */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  text-align: center;
+}
+
+.emptyIcon {
+  color: var(--god-steel-600);
+  margin-bottom: var(--space-2);
+}
+
+.emptyText {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wide);
+  color: var(--god-steel-500);
+  text-transform: uppercase;
+}
+
+.emptyHint {
+  font-size: var(--text-xs);
+  color: var(--god-steel-600);
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.tierBadge {
+  padding: 3px 8px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  color: var(--god-steel-900);
+}
+
+.score {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--god-steel-500);
+}
+
+/* Name & location */
+.name {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--god-steel-100);
+  margin: 0 0 var(--space-1) 0;
+  line-height: 1.3;
+}
+
+.location {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--god-steel-400);
+  margin: 0 0 var(--space-3) 0;
+}
+
+/* Stats */
+.stats {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--border-thin) solid var(--god-steel-700);
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.statIcon {
+  color: var(--god-primary-400);
+}
+
+.statContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--god-steel-100);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--god-steel-500);
+}
+
+/* Products */
+.products {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.productBadge {
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.productBadge.shop {
+  background: rgba(37, 99, 235, 0.2);
+  color: var(--god-primary-400);
+  border: 1px solid rgba(37, 99, 235, 0.4);
+}
+
+.productBadge.studio {
+  background: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
+.productBadge.innx {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--god-energy-400);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+/* Contact */
+.contact {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2);
+  background: var(--god-steel-900);
+  border: var(--border-thin) solid var(--god-steel-700);
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--god-steel-400);
+}
+
+.contactRow + .contactRow {
+  margin-top: var(--space-1);
+}
+
+.contactRow a {
+  color: var(--god-primary-400);
+  text-decoration: none;
+}
+
+.contactRow a:hover {
+  text-decoration: underline;
+}
+
+/* Action button */
+.actionBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.actionBtn.add {
+  background: var(--god-steel-700);
+  border: var(--border-thin) solid var(--god-primary-500);
+  color: var(--god-primary-400);
+}
+
+.actionBtn.add:hover {
+  background: var(--god-primary-600);
+  color: white;
+  box-shadow: var(--glow-primary);
+}
+
+.actionBtn.remove {
+  background: var(--god-steel-700);
+  border: var(--border-thin) solid var(--god-danger-500);
+  color: var(--god-danger-400);
+}
+
+.actionBtn.remove:hover {
+  background: var(--god-danger-500);
+  color: white;
+  box-shadow: var(--glow-danger);
+}

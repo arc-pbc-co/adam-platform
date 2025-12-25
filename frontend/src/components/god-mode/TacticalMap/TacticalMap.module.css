@@ -1,0 +1,177 @@
+/**
+ * TacticalMap Styles
+ * SC2-style tactical display
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-primary);
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  background: linear-gradient(
+    180deg,
+    var(--bg-secondary) 0%,
+    var(--bg-primary) 100%
+  );
+  border-bottom: 1px solid var(--border-default);
+}
+
+.title h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  color: var(--accent-primary);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  letter-spacing: var(--tracking-wide);
+}
+
+.stats {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.statValue.working {
+  color: var(--accent-primary);
+}
+
+.statValue.error {
+  color: var(--accent-danger);
+}
+
+.statValue.selected {
+  color: var(--accent-secondary);
+}
+
+.statLabel {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted);
+}
+
+/* Map area */
+.mapArea {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(
+    ellipse at center,
+    var(--bg-secondary) 0%,
+    var(--bg-primary) 70%,
+    var(--bg-void) 100%
+  );
+  cursor: crosshair;
+}
+
+/* Grid overlay */
+.grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+      var(--border-subtle) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0.3;
+}
+
+/* Lab zone indicators */
+.labZone {
+  position: absolute;
+  border: 1px dashed var(--border-subtle);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
+  pointer-events: none;
+}
+
+.labLabel {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  padding: 2px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Footer */
+.footer {
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.hint kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-secondary);
+  margin-right: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .stats {
+    gap: var(--space-3);
+  }
+
+  .hint {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

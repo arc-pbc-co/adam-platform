@@ -1,0 +1,224 @@
+/**
+ * GodModeDashboard Styles
+ * Main dashboard layout with view switching
+ */
+
+.dashboard {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--bg-void);
+  position: relative;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: stretch;
+  background: linear-gradient(
+    180deg,
+    var(--bg-secondary) 0%,
+    var(--bg-primary) 100%
+  );
+  border-bottom: var(--border-medium) solid var(--border-default);
+  z-index: var(--z-sticky);
+}
+
+/* View Toggle Tabs */
+.viewToggle {
+  display: flex;
+  margin-left: var(--space-4);
+  border-left: var(--border-thin) solid var(--border-subtle);
+}
+
+.viewTab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.viewTab:hover {
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+}
+
+.viewTab.active {
+  color: var(--accent-primary);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--accent-primary) 10%, transparent) 100%
+  );
+}
+
+.viewTab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary);
+}
+
+/* Header Actions */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  padding: 0 var(--space-3);
+}
+
+.connectionStatus {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  color: var(--accent-danger);
+  background: color-mix(in srgb, var(--accent-danger) 15%, transparent);
+  border: var(--border-thin) solid var(--accent-danger);
+}
+
+.connectionStatus.connected {
+  color: var(--accent-secondary);
+  background: color-mix(in srgb, var(--accent-secondary) 15%, transparent);
+  border-color: var(--accent-secondary);
+}
+
+.iconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: var(--border-thin) solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.iconButton:hover {
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+  background: var(--bg-tertiary);
+}
+
+/* Main Content */
+.main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--layout-gap);
+  padding: var(--layout-gap);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.main:has(.sidebar) {
+  grid-template-columns: 1fr var(--layout-sidebar-width);
+}
+
+/* Viewport */
+.viewport {
+  position: relative;
+  border: var(--border-thin) solid var(--border-default);
+  background: var(--bg-primary);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.viewContainer {
+  position: absolute;
+  inset: 0;
+}
+
+/* Sidebar */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.minimapContainer {
+  height: var(--layout-minimap-height);
+  flex-shrink: 0;
+}
+
+.selectionContainer {
+  flex: 1;
+  min-height: 150px;
+  overflow: hidden;
+}
+
+.commandContainer {
+  height: var(--layout-command-panel-height);
+  flex-shrink: 0;
+}
+
+/* Footer */
+.footer {
+  border-top: var(--border-medium) solid var(--border-default);
+  background: linear-gradient(
+    180deg,
+    var(--bg-secondary) 0%,
+    var(--bg-primary) 100%
+  );
+}
+
+/* Panel entrance animation */
+@keyframes panelReveal {
+  0% {
+    opacity: 0;
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  }
+  100% {
+    opacity: 1;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+.panelEnter {
+  animation: panelReveal 0.4s ease-out forwards;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .main:has(.sidebar) {
+    grid-template-columns: 1fr 280px;
+  }
+
+  .viewTab span {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .main {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: none;
+  }
+}

@@ -1,0 +1,47 @@
+/**
+ * SelectionBox Styles
+ * SC2-style marquee selection
+ */
+
+.selectionBox {
+  position: absolute;
+  border: 1px solid var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  pointer-events: none;
+  z-index: 100;
+  /* Animated dashed border effect */
+  background-image: repeating-linear-gradient(
+    0deg,
+    var(--accent-primary),
+    var(--accent-primary) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  background-size: 1px 100%;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+}
+
+/* Corner markers */
+.selectionBox::before,
+.selectionBox::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--accent-primary);
+}
+
+.selectionBox::before {
+  top: -2px;
+  left: -2px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.selectionBox::after {
+  bottom: -2px;
+  right: -2px;
+  border-left: none;
+  border-top: none;
+}

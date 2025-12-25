@@ -1,0 +1,213 @@
+/**
+ * GlobalMap Main Styles
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--god-steel-950);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  background: linear-gradient(
+    180deg,
+    var(--god-steel-800) 0%,
+    var(--god-steel-850) 100%
+  );
+  border-bottom: var(--border-medium) solid var(--god-steel-700);
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.headerTitle h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wider);
+  color: var(--god-primary-400);
+  margin: 0;
+}
+
+.headerStats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--god-steel-400);
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--god-steel-200);
+}
+
+.statValue.tierA {
+  color: #ffd700;
+}
+
+.statValue.tierB {
+  color: #00d4ff;
+}
+
+.statDivider {
+  color: var(--god-steel-600);
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.actionBtn {
+  padding: var(--space-2) var(--space-3);
+  background: var(--god-steel-700);
+  border: var(--border-thin) solid var(--god-steel-600);
+  color: var(--god-steel-300);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.actionBtn:hover:not(:disabled) {
+  background: var(--god-steel-600);
+  border-color: var(--god-primary-500);
+  color: var(--god-steel-100);
+}
+
+.actionBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Content layout */
+.content {
+  display: grid;
+  grid-template-columns: 220px 1fr 260px;
+  gap: var(--space-2);
+  flex: 1;
+  padding: var(--space-2);
+  min-height: 0;
+}
+
+/* Sidebars */
+.sidebarLeft,
+.sidebarRight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Map viewport */
+.viewport {
+  position: relative;
+  background: var(--god-steel-900);
+  border: var(--border-thin) solid var(--god-steel-700);
+  overflow: hidden;
+}
+
+.svg {
+  display: block;
+  background: radial-gradient(
+    ellipse at center,
+    var(--god-steel-850) 0%,
+    var(--god-steel-900) 60%,
+    var(--god-steel-950) 100%
+  );
+}
+
+/* Zoom controls */
+.zoomControls {
+  position: absolute;
+  bottom: var(--space-3);
+  right: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.zoomControls button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--god-steel-800);
+  border: var(--border-thin) solid var(--god-steel-600);
+  color: var(--god-steel-300);
+  font-size: var(--text-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.zoomControls button:hover {
+  background: var(--god-steel-700);
+  border-color: var(--god-primary-500);
+  color: var(--god-steel-100);
+}
+
+/* Grid overlay */
+.gridOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--god-steel-800) 1px, transparent 1px),
+    linear-gradient(90deg, var(--god-steel-800) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0.1;
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: var(--space-3);
+  color: var(--god-steel-400);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--god-steel-700);
+  border-top-color: var(--god-primary-500);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error state */
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--god-danger-400);
+}

@@ -1,0 +1,397 @@
+/**
+ * TacticalView Styles
+ * Layout for tactical map view
+ */
+
+.layout {
+  display: grid;
+  grid-template-rows:
+    var(--layout-resource-bar-height)
+    1fr
+    var(--layout-event-log-height);
+  grid-template-columns: 1fr;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--bg-void);
+  position: relative;
+}
+
+/* Resource Bar */
+.resourceBar {
+  grid-row: 1;
+  z-index: var(--z-sticky);
+}
+
+/* Main Content Area */
+.mainContent {
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: 1fr var(--layout-sidebar-width);
+  gap: var(--layout-gap);
+  padding: var(--layout-gap);
+  min-height: 0;
+}
+
+/* Main Viewport */
+.viewport {
+  position: relative;
+  border: var(--border-thin) solid var(--border-default);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-inset-panel);
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  display: grid;
+  grid-template-rows:
+    var(--layout-minimap-height)
+    1fr
+    180px;
+  gap: var(--layout-gap);
+  min-height: 0;
+}
+
+/* Minimap */
+.minimap {
+  border: var(--border-thin) solid var(--border-default);
+  background: linear-gradient(
+    180deg,
+    var(--bg-secondary) 0%,
+    var(--bg-primary) 100%
+  );
+  box-shadow: var(--shadow-inset-subtle);
+  overflow: hidden;
+}
+
+/* Selection Panel */
+.selectionPanel {
+  border: var(--border-thin) solid var(--border-default);
+  background: linear-gradient(
+    180deg,
+    var(--bg-secondary) 0%,
+    var(--bg-primary) 100%
+  );
+  box-shadow: var(--shadow-inset-subtle);
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Command Panel */
+.commandPanel {
+  border: var(--border-thin) solid var(--border-default);
+  background: linear-gradient(
+    180deg,
+    var(--bg-secondary) 0%,
+    var(--bg-primary) 100%
+  );
+  box-shadow: var(--shadow-inset-subtle);
+  overflow: hidden;
+}
+
+/* Event Log */
+.eventLog {
+  grid-row: 3;
+  border-top: var(--border-medium) solid var(--border-default);
+  background: linear-gradient(
+    180deg,
+    var(--bg-secondary) 0%,
+    var(--bg-primary) 100%
+  );
+  overflow: hidden;
+}
+
+/* Selection Info Panel */
+.infoPanel {
+  --aug-border-all: 1px;
+  --aug-border-bg: var(--border-subtle);
+  --aug-tl: var(--aug-clip-sm);
+  --aug-br: var(--aug-clip-sm);
+  height: 100%;
+  background: var(--bg-panel);
+  backdrop-filter: blur(8px);
+  overflow-y: auto;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: var(--space-2);
+  color: var(--text-muted);
+}
+
+.emptyTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wide);
+}
+
+.emptyHint {
+  font-size: var(--text-sm);
+  color: var(--text-disabled);
+}
+
+/* Single printer view */
+.singlePrinter {
+  padding: var(--space-3);
+}
+
+.printerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.printerName {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.printerStatus {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: var(--bg-tertiary);
+}
+
+.printerStatus[data-status='working'] {
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+}
+
+.printerStatus[data-status='idle'] {
+  color: var(--text-muted);
+}
+
+.printerStatus[data-status='error'] {
+  color: var(--accent-danger);
+  background: color-mix(in srgb, var(--accent-danger) 15%, transparent);
+}
+
+.printerStatus[data-status='offline'] {
+  color: var(--text-disabled);
+}
+
+.printerStatus[data-status='calibrating'] {
+  color: var(--accent-warning);
+  background: color-mix(in srgb, var(--accent-warning) 15%, transparent);
+}
+
+.printerMeta {
+  display: flex;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.printerMeta span:not(:last-child)::after {
+  content: '•';
+  margin-left: var(--space-2);
+  color: var(--border-subtle);
+}
+
+.jobInfo {
+  padding: var(--space-2);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  margin-bottom: var(--space-3);
+}
+
+.jobHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-1);
+}
+
+.jobName {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.jobProgress {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.jobBar {
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.jobFill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--accent-primary),
+    var(--accent-secondary)
+  );
+  border-radius: 3px;
+  transition: width 0.3s ease-out;
+}
+
+.healthGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+
+.healthItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+}
+
+.healthLabel {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted);
+}
+
+.healthValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.healthValue.error {
+  color: var(--accent-danger);
+}
+
+/* Multi printer view */
+.multiPrinter {
+  padding: var(--space-3);
+}
+
+.multiHeader {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.multiTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--accent-secondary);
+  margin: 0;
+}
+
+.multiSubtitle {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.multiList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.multiItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg-secondary);
+  border-radius: 2px;
+}
+
+.multiItemName {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.multiItemStatus {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.multiItemStatus[data-status='working'] {
+  color: var(--accent-primary);
+}
+
+.multiItemStatus[data-status='idle'] {
+  color: var(--text-muted);
+}
+
+.multiItemStatus[data-status='error'] {
+  color: var(--accent-danger);
+}
+
+.multiItemStatus[data-status='offline'] {
+  color: var(--text-disabled);
+}
+
+.multiMore {
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  padding: var(--space-1);
+}
+
+.avgProgress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-3);
+  padding: var(--space-2);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+}
+
+.avgLabel {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.avgValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .mainContent {
+    grid-template-columns: 1fr 280px;
+  }
+}
+
+@media (max-width: 900px) {
+  .mainContent {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+
+  .sidebar {
+    grid-template-rows: auto;
+    grid-template-columns: repeat(3, 1fr);
+    height: 200px;
+  }
+}

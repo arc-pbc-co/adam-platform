@@ -1,0 +1,839 @@
+/**
+ * ADAM Platform - StarCraft 2 / RTS "God Mode" Design System
+ *
+ * Inspired by SC2's dark metallic interface with glowing accents,
+ * beveled panels, and high-tech military aesthetics.
+ */
+
+/* ============================================================================
+   CSS Custom Properties (Design Tokens)
+   ============================================================================ */
+
+:root {
+  /* =========================================================================
+     SKILL-COMPATIBLE DESIGN TOKENS
+     These aliases match the starcraft-god-mode-ui skill specification
+     ========================================================================= */
+
+  /* Background layers (darkest to lightest) */
+  --bg-void: #050810;
+  --bg-primary: #0a0e14;
+  --bg-secondary: #121a24;
+  --bg-tertiary: #1a2532;
+  --bg-elevated: #222d3a;
+  --bg-panel: rgba(10, 20, 30, 0.95);
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Accent colors - faction-inspired */
+  --accent-primary: #00d4ff;      /* Cyan - Protoss energy */
+  --accent-secondary: #00ff88;    /* Green - success/online */
+  --accent-warning: #ffaa00;      /* Orange - caution */
+  --accent-danger: #ff3366;       /* Red - error/critical */
+  --accent-purple: #aa44ff;       /* Purple - AI/autonomous */
+  --accent-gold: #ffd700;         /* Gold - premium/highlight */
+
+  /* Text hierarchy */
+  --text-primary: #e4e8ed;
+  --text-secondary: #8899aa;
+  --text-tertiary: #667788;
+  --text-muted: #556677;
+  --text-disabled: #334455;
+
+  /* Borders (skill-compatible) */
+  --border-subtle: rgba(0, 212, 255, 0.15);
+  --border-default: rgba(0, 212, 255, 0.3);
+  --border-active: rgba(0, 212, 255, 0.6);
+  --border-strong: var(--accent-primary);
+
+  /* Glow effects (skill-compatible) */
+  --glow-primary: 0 0 20px rgba(0, 212, 255, 0.4);
+  --glow-primary-soft: 0 0 10px rgba(0, 212, 255, 0.2);
+  --glow-primary-intense: 0 0 30px rgba(0, 212, 255, 0.6), 0 0 60px rgba(0, 212, 255, 0.3);
+  --glow-success: 0 0 20px rgba(0, 255, 136, 0.4);
+  --glow-warning: 0 0 20px rgba(255, 170, 0, 0.4);
+  --glow-danger: 0 0 20px rgba(255, 51, 102, 0.4);
+  --glow-purple: 0 0 20px rgba(170, 68, 255, 0.4);
+
+  /* Augmented UI clip sizes */
+  --aug-clip-sm: 6px;
+  --aug-clip-md: 12px;
+  --aug-clip-lg: 20px;
+
+  /* -------------------------------------------------------------------------
+     Color Palette - SC2 Terran Blue/Steel Theme (extended)
+     ------------------------------------------------------------------------- */
+
+  /* Primary: Terran Blue - Used for primary actions, highlights, selected states */
+  --god-primary-900: #0a1628;
+  --god-primary-800: #0f2847;
+  --god-primary-700: #153a66;
+  --god-primary-600: #1a4d85;
+  --god-primary-500: #2563eb;  /* Main primary */
+  --god-primary-400: #4f8ff7;
+  --god-primary-300: #79b1fc;
+  --god-primary-200: #a3d3ff;
+  --god-primary-100: #d1e9ff;
+
+  /* Secondary: Steel/Gunmetal - Panels, containers, structural elements */
+  --god-steel-950: #080a0d;
+  --god-steel-900: #0d1117;
+  --god-steel-850: #12171f;
+  --god-steel-800: #161b22;
+  --god-steel-700: #21262d;
+  --god-steel-600: #30363d;
+  --god-steel-500: #484f58;
+  --god-steel-400: #6e7681;
+  --god-steel-300: #8b949e;
+  --god-steel-200: #c9d1d9;
+  --god-steel-100: #f0f6fc;
+
+  /* Accent: Energy Orange/Yellow - Warnings, energy bars, important callouts */
+  --god-energy-500: #f59e0b;
+  --god-energy-400: #fbbf24;
+  --god-energy-300: #fcd34d;
+  --god-energy-glow: rgba(245, 158, 11, 0.5);
+
+  /* Success: Mineral Teal - Resources, positive states, online status */
+  --god-mineral-500: #06b6d4;
+  --god-mineral-400: #22d3ee;
+  --god-mineral-300: #67e8f9;
+  --god-mineral-glow: rgba(6, 182, 212, 0.5);
+
+  /* Danger: Vespene Green transitioning to Red for alerts */
+  --god-vespene-500: #10b981;
+  --god-vespene-400: #34d399;
+  --god-danger-500: #ef4444;
+  --god-danger-400: #f87171;
+  --god-danger-glow: rgba(239, 68, 68, 0.5);
+
+  /* -------------------------------------------------------------------------
+     Typography
+     ------------------------------------------------------------------------- */
+
+  --font-display: 'Orbitron', sans-serif;      /* Headers, titles, HUD elements */
+  --font-body: 'Exo 2', sans-serif;            /* Body text, descriptions */
+  --font-mono: 'JetBrains Mono', monospace;    /* Data, logs, code, numbers */
+
+  /* Font Sizes - Using a modular scale */
+  --text-xs: 0.625rem;    /* 10px - Tiny labels */
+  --text-sm: 0.75rem;     /* 12px - Small text, captions */
+  --text-base: 0.875rem;  /* 14px - Body text (dense UI) */
+  --text-md: 1rem;        /* 16px - Emphasized body */
+  --text-lg: 1.125rem;    /* 18px - Section headers */
+  --text-xl: 1.25rem;     /* 20px - Panel titles */
+  --text-2xl: 1.5rem;     /* 24px - Major headers */
+  --text-3xl: 1.875rem;   /* 30px - Page titles */
+  --text-4xl: 2.25rem;    /* 36px - Hero numbers */
+
+  /* Line Heights */
+  --leading-tight: 1.1;
+  --leading-snug: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* Letter Spacing */
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+  --tracking-widest: 0.2em;
+
+  /* -------------------------------------------------------------------------
+     Spacing Scale
+     ------------------------------------------------------------------------- */
+
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+
+  /* -------------------------------------------------------------------------
+     Borders & Corners
+     ------------------------------------------------------------------------- */
+
+  --border-thin: 1px;
+  --border-medium: 2px;
+  --border-thick: 3px;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* Border colors */
+  --border-subtle: var(--god-steel-700);
+  --border-default: var(--god-steel-600);
+  --border-strong: var(--god-steel-500);
+  --border-accent: var(--god-primary-500);
+  --border-glow: var(--god-primary-400);
+
+  /* -------------------------------------------------------------------------
+     Shadows & Glows (SC2-style panel depth)
+     ------------------------------------------------------------------------- */
+
+  /* Inset shadows for beveled panel effect */
+  --shadow-inset-subtle: inset 0 1px 0 rgba(255, 255, 255, 0.05),
+                         inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  --shadow-inset-panel: inset 0 2px 4px rgba(0, 0, 0, 0.5),
+                        inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-inset-deep: inset 0 4px 8px rgba(0, 0, 0, 0.6),
+                       inset 0 1px 0 rgba(0, 0, 0, 0.8);
+
+  /* Drop shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4), 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5), 0 10px 10px rgba(0, 0, 0, 0.4);
+
+  /* Glow effects for selected/active states */
+  --glow-primary: 0 0 10px var(--god-primary-500), 0 0 20px rgba(37, 99, 235, 0.3);
+  --glow-energy: 0 0 10px var(--god-energy-500), 0 0 20px var(--god-energy-glow);
+  --glow-mineral: 0 0 10px var(--god-mineral-500), 0 0 20px var(--god-mineral-glow);
+  --glow-danger: 0 0 10px var(--god-danger-500), 0 0 20px var(--god-danger-glow);
+
+  /* -------------------------------------------------------------------------
+     Z-Index Scale
+     ------------------------------------------------------------------------- */
+
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-popover: 500;
+  --z-tooltip: 600;
+  --z-notification: 700;
+
+  /* -------------------------------------------------------------------------
+     Transitions & Animations
+     ------------------------------------------------------------------------- */
+
+  --transition-fast: 100ms ease-out;
+  --transition-base: 200ms ease-out;
+  --transition-slow: 300ms ease-out;
+  --transition-slower: 500ms ease-out;
+
+  /* -------------------------------------------------------------------------
+     Layout - God Mode Grid
+     ------------------------------------------------------------------------- */
+
+  --layout-resource-bar-height: 48px;
+  --layout-sidebar-width: 320px;
+  --layout-minimap-height: 200px;
+  --layout-command-panel-height: 180px;
+  --layout-event-log-height: 160px;
+  --layout-gap: var(--space-2);
+}
+
+/* ============================================================================
+   Base Styles
+   ============================================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--god-steel-200);
+  background: var(--god-steel-950);
+  overflow: hidden;
+}
+
+/* ============================================================================
+   Typography Utilities
+   ============================================================================ */
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-wide);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* ============================================================================
+   Panel Base Styles (SC2-inspired beveled containers)
+   ============================================================================ */
+
+.god-panel {
+  background: linear-gradient(
+    180deg,
+    var(--god-steel-800) 0%,
+    var(--god-steel-850) 50%,
+    var(--god-steel-900) 100%
+  );
+  border: var(--border-thin) solid var(--god-steel-600);
+  box-shadow: var(--shadow-inset-subtle), var(--shadow-md);
+  position: relative;
+}
+
+.god-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+}
+
+.god-panel--elevated {
+  background: linear-gradient(
+    180deg,
+    var(--god-steel-700) 0%,
+    var(--god-steel-800) 100%
+  );
+  box-shadow: var(--shadow-lg);
+}
+
+.god-panel--inset {
+  background: var(--god-steel-900);
+  box-shadow: var(--shadow-inset-panel);
+  border-color: var(--god-steel-700);
+}
+
+.god-panel--selected {
+  border-color: var(--god-primary-500);
+  box-shadow: var(--glow-primary), var(--shadow-inset-subtle);
+}
+
+/* ============================================================================
+   Augmented UI Integration
+   ============================================================================ */
+
+/* SC2-style corner clips */
+[data-augmented-ui] {
+  --aug-border-all: var(--border-thin);
+  --aug-border-bg: var(--god-steel-600);
+  --aug-inlay-all: 0;
+  --aug-inlay-bg: transparent;
+}
+
+.aug-clip-tl {
+  --aug-tl1: 12px;
+  --aug-tl-inset1: 4px;
+}
+
+.aug-clip-tr {
+  --aug-tr1: 12px;
+  --aug-tr-inset1: 4px;
+}
+
+.aug-clip-bl {
+  --aug-bl1: 12px;
+  --aug-bl-inset1: 4px;
+}
+
+.aug-clip-br {
+  --aug-br1: 12px;
+  --aug-br-inset1: 4px;
+}
+
+/* ============================================================================
+   Button Styles
+   ============================================================================ */
+
+.god-button {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  padding: var(--space-2) var(--space-4);
+  border: var(--border-thin) solid var(--god-steel-500);
+  background: linear-gradient(
+    180deg,
+    var(--god-steel-600) 0%,
+    var(--god-steel-700) 100%
+  );
+  color: var(--god-steel-200);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-inset-subtle);
+}
+
+.god-button:hover {
+  background: linear-gradient(
+    180deg,
+    var(--god-steel-500) 0%,
+    var(--god-steel-600) 100%
+  );
+  border-color: var(--god-steel-400);
+  color: var(--god-steel-100);
+}
+
+.god-button:active {
+  background: var(--god-steel-700);
+  box-shadow: var(--shadow-inset-panel);
+}
+
+.god-button--primary {
+  background: linear-gradient(
+    180deg,
+    var(--god-primary-500) 0%,
+    var(--god-primary-600) 100%
+  );
+  border-color: var(--god-primary-400);
+  color: white;
+}
+
+.god-button--primary:hover {
+  background: linear-gradient(
+    180deg,
+    var(--god-primary-400) 0%,
+    var(--god-primary-500) 100%
+  );
+  box-shadow: var(--glow-primary);
+}
+
+.god-button--danger {
+  background: linear-gradient(
+    180deg,
+    var(--god-danger-500) 0%,
+    #dc2626 100%
+  );
+  border-color: var(--god-danger-400);
+  color: white;
+}
+
+/* ============================================================================
+   Resource Bar Styles
+   ============================================================================ */
+
+.god-resource-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: 0 var(--space-4);
+  height: var(--layout-resource-bar-height);
+  background: linear-gradient(
+    180deg,
+    var(--god-steel-800) 0%,
+    var(--god-steel-900) 100%
+  );
+  border-bottom: var(--border-medium) solid var(--god-steel-700);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.god-resource-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.god-resource-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--god-steel-100);
+  min-width: 60px;
+}
+
+.god-resource-label {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--god-steel-400);
+}
+
+/* ============================================================================
+   Status Indicators
+   ============================================================================ */
+
+.god-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.god-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.god-status--online .god-status-dot {
+  background: var(--god-vespene-500);
+  box-shadow: 0 0 6px var(--god-vespene-500);
+}
+
+.god-status--offline .god-status-dot {
+  background: var(--god-danger-500);
+  box-shadow: 0 0 6px var(--god-danger-500);
+}
+
+.god-status--warning .god-status-dot {
+  background: var(--god-energy-500);
+  box-shadow: 0 0 6px var(--god-energy-500);
+}
+
+.god-status--idle .god-status-dot {
+  background: var(--god-steel-500);
+  animation: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ============================================================================
+   Progress Bars
+   ============================================================================ */
+
+.god-progress {
+  height: 8px;
+  background: var(--god-steel-800);
+  border: var(--border-thin) solid var(--god-steel-600);
+  box-shadow: var(--shadow-inset-deep);
+  overflow: hidden;
+}
+
+.god-progress-fill {
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    var(--god-primary-400) 0%,
+    var(--god-primary-500) 50%,
+    var(--god-primary-600) 100%
+  );
+  box-shadow: 0 0 8px var(--god-primary-500);
+  transition: width var(--transition-base);
+}
+
+.god-progress--energy .god-progress-fill {
+  background: linear-gradient(
+    180deg,
+    var(--god-energy-300) 0%,
+    var(--god-energy-500) 100%
+  );
+  box-shadow: 0 0 8px var(--god-energy-500);
+}
+
+.god-progress--mineral .god-progress-fill {
+  background: linear-gradient(
+    180deg,
+    var(--god-mineral-300) 0%,
+    var(--god-mineral-500) 100%
+  );
+  box-shadow: 0 0 8px var(--god-mineral-500);
+}
+
+/* ============================================================================
+   Scrollbar Styling
+   ============================================================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--god-steel-900);
+  border: var(--border-thin) solid var(--god-steel-700);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--god-steel-600);
+  border: var(--border-thin) solid var(--god-steel-500);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--god-steel-500);
+}
+
+/* ============================================================================
+   Event Log Styles
+   ============================================================================ */
+
+.god-event-log {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  overflow-y: auto;
+  padding: var(--space-2);
+}
+
+.god-event-log-entry {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  border-bottom: var(--border-thin) solid var(--god-steel-800);
+}
+
+.god-event-log-time {
+  color: var(--god-steel-500);
+  flex-shrink: 0;
+  width: 80px;
+}
+
+.god-event-log-type {
+  font-weight: 600;
+  flex-shrink: 0;
+  width: 100px;
+}
+
+.god-event-log-type--info { color: var(--god-primary-400); }
+.god-event-log-type--success { color: var(--god-vespene-400); }
+.god-event-log-type--warning { color: var(--god-energy-400); }
+.god-event-log-type--error { color: var(--god-danger-400); }
+
+.god-event-log-message {
+  color: var(--god-steel-300);
+  flex: 1;
+}
+
+/* ============================================================================
+   Selection Highlight
+   ============================================================================ */
+
+::selection {
+  background: var(--god-primary-500);
+  color: white;
+}
+
+/* ============================================================================
+   Utility Classes
+   ============================================================================ */
+
+.text-glow-primary {
+  text-shadow: 0 0 10px var(--god-primary-500);
+}
+
+.text-glow-energy {
+  text-shadow: 0 0 10px var(--god-energy-500);
+}
+
+.text-glow-mineral {
+  text-shadow: 0 0 10px var(--god-mineral-500);
+}
+
+.border-glow-primary {
+  box-shadow: var(--glow-primary);
+}
+
+.scanline-overlay {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  z-index: 1000;
+}
+
+/* ============================================================================
+   Skill-Compatible Animations
+   ============================================================================ */
+
+/* Animated scan line (SC2 effect) */
+.scan-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 212, 255, 0.03) 50%,
+    transparent 100%
+  );
+  animation: scanLine 4s linear infinite;
+}
+
+@keyframes scanLine {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* Panel reveal animation */
+@keyframes panelReveal {
+  0% {
+    opacity: 0;
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  }
+  100% {
+    opacity: 1;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+.panel-enter {
+  animation: panelReveal 0.4s ease-out forwards;
+}
+
+/* Glow pulse animation */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 5px var(--accent-primary); }
+  50% { box-shadow: 0 0 20px var(--accent-primary), 0 0 40px var(--accent-primary); }
+}
+
+.glow-pulse {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* Data stream shimmer */
+@keyframes dataStream {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.data-stream {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-primary) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: dataStream 3s linear infinite;
+}
+
+/* Fade in up animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* Status indicator pulse */
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.2); }
+}
+
+.status-pulse {
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+/* Marker pulse for map markers */
+@keyframes markerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.marker-pulse {
+  animation: markerPulse 2s ease-in-out infinite;
+}
+
+/* ============================================================================
+   Augmented-UI Preset Classes
+   ============================================================================ */
+
+/* Small clip panel */
+.aug-panel-sm {
+  --aug-tl: var(--aug-clip-sm);
+  --aug-br: var(--aug-clip-sm);
+  --aug-border-all: 1px;
+  --aug-border-bg: var(--border-subtle);
+}
+
+/* Medium clip panel (default) */
+.aug-panel {
+  --aug-tl: var(--aug-clip-md);
+  --aug-br: var(--aug-clip-md);
+  --aug-border-all: 1px;
+  --aug-border-bg: var(--border-subtle);
+}
+
+/* Large clip panel */
+.aug-panel-lg {
+  --aug-tl: var(--aug-clip-lg);
+  --aug-br: var(--aug-clip-lg);
+  --aug-border-all: 1px;
+  --aug-border-bg: var(--border-subtle);
+}
+
+/* Active state */
+.aug-active {
+  --aug-border-bg: var(--accent-primary);
+}
+
+/* Alert variants */
+.aug-success { --aug-border-bg: var(--accent-secondary); }
+.aug-warning { --aug-border-bg: var(--accent-warning); }
+.aug-danger { --aug-border-bg: var(--accent-danger); }
+
+/* ============================================================================
+   Utility Classes (Skill-Compatible)
+   ============================================================================ */
+
+/* Text utilities */
+.text-display { font-family: var(--font-display); }
+.text-body { font-family: var(--font-body); }
+.text-mono { font-family: var(--font-mono); }
+
+.text-accent { color: var(--accent-primary); }
+.text-success { color: var(--accent-secondary); }
+.text-warning { color: var(--accent-warning); }
+.text-danger { color: var(--accent-danger); }
+
+.uppercase { text-transform: uppercase; }
+.tracking-wide { letter-spacing: var(--tracking-wide); }
+.tracking-wider { letter-spacing: var(--tracking-wider); }
+
+/* Glow utilities */
+.glow { box-shadow: var(--glow-primary); }
+.glow-success { box-shadow: var(--glow-success); }
+.glow-warning { box-shadow: var(--glow-warning); }
+.glow-danger { box-shadow: var(--glow-danger); }
+
+/* Text glow */
+.text-glow {
+  text-shadow: 0 0 10px currentColor;
+}
+
+/* Backdrop blur */
+.backdrop-blur {
+  backdrop-filter: blur(8px);
+}
+
+/* Transitions */
+.transition { transition: all var(--transition-base); }
+.transition-fast { transition: all var(--transition-fast); }
+.transition-slow { transition: all var(--transition-slow); }

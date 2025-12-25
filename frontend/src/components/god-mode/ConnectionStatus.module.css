@@ -1,0 +1,144 @@
+/**
+ * ConnectionStatus Styles
+ * WebSocket connection indicator for ResourceBar
+ */
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.container[role='button'] {
+  cursor: pointer;
+}
+
+.container[role='button']:hover {
+  background: var(--bg-elevated);
+}
+
+.container[role='button']:active {
+  transform: scale(0.98);
+}
+
+.compact {
+  padding: var(--space-1);
+  gap: var(--space-1);
+}
+
+/* Status dot container */
+.dot {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compact .dot {
+  width: 16px;
+  height: 16px;
+}
+
+.dotInner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* Status-specific colors */
+.dot.connected {
+  color: var(--accent-secondary);
+}
+
+.dot.connecting,
+.dot.reconnecting {
+  color: var(--accent-warning);
+}
+
+.dot.disconnected {
+  color: var(--accent-danger);
+}
+
+/* Pulse animation for connected state */
+.pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: currentColor;
+  z-index: 1;
+}
+
+/* Glow effect */
+.glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.3;
+  filter: blur(4px);
+  z-index: 0;
+}
+
+.dot.disconnected .glow {
+  opacity: 0.15;
+}
+
+/* Label */
+.label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+}
+
+.compact .label {
+  font-size: 8px;
+}
+
+.label.connected {
+  color: var(--accent-secondary);
+  text-shadow: 0 0 8px var(--accent-secondary);
+}
+
+.label.connecting,
+.label.reconnecting {
+  color: var(--accent-warning);
+}
+
+.label.disconnected {
+  color: var(--accent-danger);
+}
+
+/* Reconnect icon */
+.reconnectIcon {
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.container[role='button']:hover .reconnectIcon {
+  opacity: 1;
+}
+
+/* Animation for reconnecting state */
+@keyframes reconnectSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.reconnecting .dotInner {
+  animation: reconnectSpin 1s linear infinite;
+}

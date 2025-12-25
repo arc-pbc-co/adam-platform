@@ -1,0 +1,62 @@
+/**
+ * StatusIndicator Styles
+ * Animated status dots with pulsing effects
+ */
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-indicator__dot {
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-indicator--sm .status-indicator__dot {
+  width: 6px;
+  height: 6px;
+}
+
+.status-indicator--md .status-indicator__dot {
+  width: 8px;
+  height: 8px;
+}
+
+.status-indicator--lg .status-indicator__dot {
+  width: 12px;
+  height: 12px;
+}
+
+.status-indicator__dot--online {
+  background: var(--accent-secondary);
+}
+
+.status-indicator__dot--working {
+  background: var(--accent-primary);
+}
+
+.status-indicator__dot--idle {
+  background: var(--text-muted);
+}
+
+.status-indicator__dot--error {
+  background: var(--accent-danger);
+}
+
+.status-indicator__dot--offline {
+  background: var(--text-muted);
+  opacity: 0.5;
+}
+
+.status-indicator__dot--pulse {
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+.status-indicator__label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

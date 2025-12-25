@@ -1,0 +1,272 @@
+/**
+ * GlobalNetworkMap Styles
+ */
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(
+    ellipse at center,
+    var(--god-steel-850) 0%,
+    var(--god-steel-900) 60%,
+    var(--god-steel-950) 100%
+  );
+}
+
+.svg {
+  display: block;
+}
+
+/* Header overlay */
+.header {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-4);
+  z-index: 10;
+}
+
+.title {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wider);
+  color: var(--god-steel-200);
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.subtitle {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--god-steel-500);
+  letter-spacing: var(--tracking-wide);
+  margin-top: var(--space-1);
+}
+
+/* Map elements */
+.mapGroup {
+  /* Group for transform animations */
+}
+
+.states path {
+  fill: var(--god-steel-800);
+  stroke: none;
+  transition: fill var(--transition-fast);
+}
+
+.state {
+  fill: var(--god-steel-850);
+}
+
+.state:hover {
+  fill: var(--god-steel-800);
+}
+
+.stateBorders {
+  fill: none;
+  stroke: var(--god-steel-700);
+  stroke-width: 0.5;
+  stroke-linejoin: round;
+}
+
+/* Connections */
+.connections {
+  pointer-events: none;
+}
+
+.connection {
+  fill: none;
+  stroke-width: 1.5;
+  opacity: 0.6;
+}
+
+.dataPacket {
+  fill: var(--god-primary-300);
+}
+
+/* Lab markers */
+.labs {
+  /* Container for lab markers */
+}
+
+.labMarker {
+  transition: transform var(--transition-fast);
+}
+
+.labMarker:hover {
+  transform: scale(1.2);
+}
+
+.markerOuter {
+  fill: currentColor;
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 1;
+}
+
+.markerInner {
+  fill: rgba(255, 255, 255, 0.9);
+}
+
+.labMarker.online {
+  color: var(--god-vespene-500);
+}
+
+.labMarker.running {
+  color: var(--god-primary-500);
+}
+
+.labMarker.offline {
+  color: var(--god-danger-500);
+}
+
+.labMarker.idle {
+  color: var(--god-steel-500);
+}
+
+.pulseRing {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  opacity: 0;
+  animation: markerPulse 2s ease-out infinite;
+}
+
+@keyframes markerPulse {
+  0% {
+    r: 8;
+    opacity: 0.8;
+  }
+  100% {
+    r: 24;
+    opacity: 0;
+  }
+}
+
+.selectionRing {
+  fill: none;
+  stroke: var(--god-primary-400);
+  stroke-width: 2;
+  stroke-dasharray: 4 2;
+  animation: selectionRotate 10s linear infinite;
+}
+
+@keyframes selectionRotate {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 60;
+  }
+}
+
+/* Tooltip */
+.tooltip {
+  position: fixed;
+  z-index: var(--z-tooltip);
+  padding: var(--space-2) var(--space-3);
+  background: var(--god-steel-800);
+  border: var(--border-thin) solid var(--god-steel-600);
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+}
+
+.tooltipName {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--god-steel-100);
+  letter-spacing: var(--tracking-wide);
+}
+
+.tooltipCity {
+  font-size: var(--text-xs);
+  color: var(--god-steel-400);
+  margin-top: 2px;
+}
+
+.tooltipStatus {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-wider);
+  margin-top: var(--space-1);
+  padding: 2px 6px;
+  display: inline-block;
+}
+
+.tooltipStatus.online {
+  color: var(--god-vespene-400);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.tooltipStatus.running {
+  color: var(--god-primary-400);
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+}
+
+.tooltipStatus.offline {
+  color: var(--god-danger-400);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.tooltipStatus.idle {
+  color: var(--god-steel-400);
+  background: rgba(107, 114, 128, 0.1);
+  border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+/* Stats overlay */
+.stats {
+  position: absolute;
+  bottom: var(--space-3);
+  right: var(--space-4);
+  display: flex;
+  gap: var(--space-4);
+  z-index: 10;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  background: rgba(13, 17, 23, 0.8);
+  border: var(--border-thin) solid var(--god-steel-700);
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--god-steel-200);
+}
+
+.statValue.online {
+  color: var(--god-vespene-400);
+}
+
+.statLabel {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--god-steel-500);
+}
+
+/* Grid overlay for SC2 tactical feel */
+.gridOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--god-steel-800) 1px, transparent 1px),
+    linear-gradient(90deg, var(--god-steel-800) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0.15;
+}

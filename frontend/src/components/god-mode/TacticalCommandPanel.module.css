@@ -1,0 +1,287 @@
+/**
+ * TacticalCommandPanel Styles
+ * Context-sensitive command panel for printer operations
+ */
+
+.panel {
+  --aug-border-all: 1px;
+  --aug-border-bg: var(--border-subtle);
+  --aug-tl: var(--aug-clip-sm);
+  --aug-br: var(--aug-clip-sm);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-panel);
+  backdrop-filter: blur(8px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--bg-tertiary) 50%,
+    transparent 100%
+  );
+  border-bottom: var(--border-thin) solid var(--border-subtle);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.errorIcon {
+  color: var(--accent-danger);
+  animation: errorBlink 1s ease-in-out infinite;
+}
+
+@keyframes errorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+}
+
+.selection {
+  font-size: var(--text-xs);
+  color: var(--accent-primary);
+  font-weight: 500;
+}
+
+.statusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-1) var(--space-3);
+  background: var(--bg-secondary);
+  border-bottom: var(--border-thin) solid var(--border-subtle);
+}
+
+.statusText {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: var(--space-1);
+  padding: var(--space-2);
+}
+
+.button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--space-2);
+  border: var(--border-thin) solid var(--border-default);
+  background: linear-gradient(
+    180deg,
+    var(--bg-tertiary) 0%,
+    var(--bg-secondary) 100%
+  );
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  border-radius: 2px;
+}
+
+.button:hover:not(.disabled) {
+  background: linear-gradient(
+    180deg,
+    var(--bg-elevated) 0%,
+    var(--bg-tertiary) 100%
+  );
+  border-color: var(--border-active);
+}
+
+.button:active:not(.disabled) {
+  background: var(--bg-secondary);
+}
+
+.button.primary {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent-secondary) 30%, var(--bg-secondary)) 0%,
+    color-mix(in srgb, var(--accent-secondary) 20%, var(--bg-primary)) 100%
+  );
+  border-color: var(--accent-secondary);
+}
+
+.button.primary:hover:not(.disabled) {
+  box-shadow: var(--glow-success);
+}
+
+.button.warning {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent-warning) 30%, var(--bg-secondary)) 0%,
+    color-mix(in srgb, var(--accent-warning) 20%, var(--bg-primary)) 100%
+  );
+  border-color: var(--accent-warning);
+}
+
+.button.warning:hover:not(.disabled) {
+  box-shadow: var(--glow-warning);
+}
+
+.button.danger {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent-danger) 30%, var(--bg-secondary)) 0%,
+    color-mix(in srgb, var(--accent-danger) 20%, var(--bg-primary)) 100%
+  );
+  border-color: var(--accent-danger);
+}
+
+.button.danger:hover:not(.disabled) {
+  box-shadow: var(--glow-danger);
+}
+
+.button.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: var(--bg-secondary);
+  border-color: var(--border-subtle);
+}
+
+.button.pending {
+  opacity: 0.7;
+  pointer-events: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent-primary) 40%, transparent);
+}
+
+.emptySlot {
+  background: var(--bg-secondary);
+  border: var(--border-thin) dashed var(--border-subtle);
+  border-radius: 2px;
+  opacity: 0.3;
+}
+
+.buttonIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.buttonLabel {
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.hotkey {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 1px 3px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 2px;
+}
+
+.button:hover:not(.disabled) .hotkey {
+  color: var(--text-secondary);
+}
+
+.quickStats {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-secondary);
+  border-top: var(--border-thin) solid var(--border-subtle);
+}
+
+.quickStat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.quickStat svg {
+  color: var(--text-secondary);
+}
+
+/* Spinner animation for pending commands */
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Count badge for applicable agents */
+.count {
+  position: absolute;
+  bottom: 2px;
+  left: 4px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--accent-primary);
+  padding: 1px 3px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 2px;
+  min-width: 12px;
+  text-align: center;
+}
+
+/* Offline indicator in status bar */
+.offlineIndicator {
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  color: var(--accent-danger);
+  padding: 2px 6px;
+  background: color-mix(in srgb, var(--accent-danger) 20%, transparent);
+  border: 1px solid var(--accent-danger);
+  border-radius: 2px;
+  animation: offlinePulse 2s ease-in-out infinite;
+}
+
+@keyframes offlinePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Pending icon animation in header */
+.pendingIcon {
+  color: var(--accent-primary);
+  animation: spin 1.5s linear infinite;
+}

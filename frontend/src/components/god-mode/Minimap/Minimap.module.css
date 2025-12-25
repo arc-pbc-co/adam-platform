@@ -1,0 +1,176 @@
+/**
+ * Minimap Styles
+ * Tactical overview with SC2-style aesthetics
+ */
+
+.minimap {
+  --aug-border-all: 1px;
+  --aug-border-bg: var(--accent-primary);
+  --aug-tl: 8px;
+  --aug-br: 8px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    var(--bg-secondary) 0%,
+    var(--bg-primary) 100%
+  );
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--bg-tertiary) 50%,
+    transparent 100%
+  );
+  border-bottom: var(--border-thin) solid var(--border-subtle);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-widest);
+  color: var(--accent-primary);
+}
+
+.count {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  background: var(--bg-tertiary);
+  border: var(--border-thin) solid var(--border-subtle);
+}
+
+/* Map Area */
+.mapArea {
+  flex: 1;
+  position: relative;
+  margin: var(--space-2);
+  background: var(--bg-void);
+  border: var(--border-thin) solid var(--border-default);
+  cursor: crosshair;
+  overflow: hidden;
+}
+
+/* Grid Overlay */
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 20% 20%;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Printer Markers */
+.marker {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  padding: 0;
+  transition: box-shadow var(--transition-fast);
+}
+
+.marker:hover {
+  z-index: 10;
+}
+
+.marker.selected {
+  z-index: 5;
+  box-shadow: 0 0 8px var(--accent-secondary);
+}
+
+/* Pulse Animation for Working Printers */
+.pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-secondary);
+  animation: pulse 1.5s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Selection Ring */
+.selectionRing {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-secondary);
+  animation: selectionPulse 1s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes selectionPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Viewport Rectangle */
+.viewport {
+  position: absolute;
+  border: 2px solid var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  pointer-events: none;
+  box-shadow:
+    0 0 8px var(--accent-primary),
+    inset 0 0 8px color-mix(in srgb, var(--accent-primary) 20%, transparent);
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border-top: var(--border-thin) solid var(--border-subtle);
+  background: var(--bg-tertiary);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.legendDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}

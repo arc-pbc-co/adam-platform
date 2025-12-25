@@ -1,0 +1,88 @@
+/**
+ * ProgressBar Styles
+ * Resource gauge with shimmer and glow effects
+ */
+
+.progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.progress-bar__track {
+  flex: 1;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar--sm .progress-bar__track {
+  height: 4px;
+}
+
+.progress-bar--md .progress-bar__track {
+  height: 8px;
+}
+
+.progress-bar--lg .progress-bar__track {
+  height: 12px;
+}
+
+.progress-bar__fill {
+  height: 100%;
+  transition: width 0.3s ease-out;
+}
+
+.progress-bar__fill--default {
+  background: linear-gradient(
+    90deg,
+    var(--accent-primary),
+    var(--accent-secondary)
+  );
+}
+
+.progress-bar__fill--success {
+  background: var(--accent-secondary);
+}
+
+.progress-bar__fill--warning {
+  background: var(--accent-warning);
+}
+
+.progress-bar__fill--danger {
+  background: var(--accent-danger);
+}
+
+.progress-bar__glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  filter: blur(4px);
+  opacity: 0.5;
+  background: inherit;
+  pointer-events: none;
+}
+
+.progress-bar__fill--animate {
+  background-size: 200% 100%;
+  animation: progressShimmer 2s linear infinite;
+}
+
+@keyframes progressShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.progress-bar__label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  min-width: 100px;
+  text-align: right;
+}

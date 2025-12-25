@@ -1,0 +1,307 @@
+/**
+ * PrinterUnit Styles
+ * SC2-style unit with status and selection states
+ */
+
+.unit {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Unit body */
+.body {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    180deg,
+    var(--bg-tertiary) 0%,
+    var(--bg-secondary) 100%
+  );
+  border: 2px solid var(--border-default);
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+}
+
+.unit:hover .body {
+  border-color: var(--border-active);
+  transform: translateY(-2px);
+}
+
+/* Icon */
+.icon {
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.unit:hover .icon {
+  color: var(--text-primary);
+}
+
+/* Status-specific body styles */
+.unit.working .body {
+  border-color: var(--accent-primary);
+  box-shadow: var(--glow-primary-soft);
+}
+
+.unit.working .icon {
+  color: var(--accent-primary);
+}
+
+.unit.error .body {
+  border-color: var(--accent-danger);
+  box-shadow: var(--glow-danger);
+  animation: errorPulse 1s ease-in-out infinite;
+}
+
+.unit.error .icon {
+  color: var(--accent-danger);
+}
+
+.unit.calibrating .body {
+  border-color: var(--accent-warning);
+  box-shadow: var(--glow-warning);
+}
+
+.unit.calibrating .icon {
+  color: var(--accent-warning);
+}
+
+.unit.offline .body {
+  opacity: 0.5;
+  border-color: var(--border-subtle);
+}
+
+.unit.offline .icon {
+  color: var(--text-disabled);
+}
+
+/* Selected state */
+.unit.selected .body {
+  border-color: var(--accent-secondary);
+  box-shadow: var(--glow-success);
+}
+
+.selectionRing {
+  position: absolute;
+  inset: -6px;
+  border: 2px solid var(--accent-secondary);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.selectionRing::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 1px solid var(--accent-secondary);
+  border-radius: 10px;
+  opacity: 0.3;
+}
+
+/* Status dot */
+.statusDot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-primary);
+}
+
+.pulse {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  animation: statusPulse 2s ease-out infinite;
+}
+
+/* Error badge */
+.errorBadge {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-danger);
+  border-radius: 50%;
+  color: white;
+  animation: bounce 0.5s ease infinite;
+}
+
+/* Connection badge */
+.connectionBadge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  color: var(--accent-secondary);
+}
+
+.unit.offline .connectionBadge {
+  color: var(--accent-danger);
+}
+
+/* Progress bar */
+.progressContainer {
+  width: 52px;
+  height: 4px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--accent-primary),
+    var(--accent-secondary)
+  );
+  transition: width 0.3s ease-out;
+  box-shadow: 0 0 4px var(--accent-primary);
+}
+
+/* Label */
+.label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 2px 6px;
+  background: var(--bg-overlay);
+  border-radius: 2px;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: all var(--transition-fast);
+  pointer-events: none;
+}
+
+.unit:hover .label,
+.unit.selected .label {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.progress {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--accent-primary);
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  width: 160px;
+  padding: 8px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-fast);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.unit:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.tooltipHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.tooltipName {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tooltipStatus {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.tooltipBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tooltipRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+}
+
+.tooltipRow span:first-child {
+  color: var(--text-muted);
+}
+
+.tooltipRow span:last-child {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* Animations */
+@keyframes errorPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px var(--accent-danger);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--accent-danger), 0 0 30px var(--accent-danger);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
