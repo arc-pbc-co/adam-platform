@@ -1,0 +1,7 @@
+{
+  "eventName": "TotallyUnknownEvent",
+  "eventData": {
+    "foo": "bar",
+    "note": "This eventName is not part of the INTERSECT Instrument Controller capability contract."
+  }
+}

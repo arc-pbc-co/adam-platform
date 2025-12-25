@@ -1,0 +1,8 @@
+{
+  "eventName": "InstrumentActionCompletion",
+  "eventData": {
+    "actionName": "HOME",
+    "timeBegin": "2025-01-01T00:00:00Z",
+    "timeEnd": "2025-01-01T00:00:01Z"
+  }
+}

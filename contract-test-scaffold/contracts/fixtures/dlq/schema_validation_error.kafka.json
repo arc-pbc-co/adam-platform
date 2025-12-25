@@ -1,0 +1,40 @@
+{
+  "dlqVersion": "1",
+  "receivedAt": "2025-01-01T00:00:10Z",
+  "source": {
+    "broker": "kafka",
+    "sourceTopic": "intersect.events",
+    "partition": 7,
+    "offset": 12345,
+    "messageId": "kafka:intersect.events:7:12345",
+    "headers": {
+      "contentType": "application/json"
+    }
+  },
+  "error": {
+    "code": "SCHEMA_VALIDATION_ERROR",
+    "message": "InstrumentActionCompletion missing required fields",
+    "details": {
+      "missing": [
+        "actionStatus"
+      ]
+    }
+  },
+  "correlation": {
+    "campaignId": "camp_123",
+    "experimentRunId": "run_456",
+    "traceId": "trace_789",
+    "instrumentControllerId": "controller_sim_01"
+  },
+  "original": {
+    "envelope": {
+      "eventName": "InstrumentActionCompletion",
+      "eventData": {
+        "actionName": "HOME",
+        "timeBegin": "2025-01-01T00:00:00Z",
+        "timeEnd": "2025-01-01T00:00:01Z"
+      }
+    },
+    "raw": null
+  }
+}

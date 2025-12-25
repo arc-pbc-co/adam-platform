@@ -1,6 +1,6 @@
 {
   "eventType": "adam.intersect.instrument_action_completion",
-  "occurredAt": "2025-12-24T20:37:38Z",
+  "occurredAt": "2025-12-24T20:37:39Z",
   "correlation": {
     "campaignId": "camp_123",
     "experimentRunId": "run_456",

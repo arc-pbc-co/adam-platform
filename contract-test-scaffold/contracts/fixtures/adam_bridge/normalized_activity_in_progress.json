@@ -1,0 +1,15 @@
+{
+  "eventType": "adam.intersect.instrument_activity_status_change",
+  "occurredAt": "2025-01-01T00:00:00Z",
+  "correlation": {
+    "campaignId": "camp_123",
+    "experimentRunId": "run_456",
+    "traceId": "trace_789",
+    "instrumentControllerId": "controller_sim_01"
+  },
+  "payload": {
+    "activityId": "act_0001",
+    "activityName": "BUILD",
+    "activityStatus": "ACTIVITY_IN_PROGRESS"
+  }
+}

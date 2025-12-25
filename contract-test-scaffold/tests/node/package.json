@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    "validate:fixtures": "node ./src/validate-fixtures.js"
+    "validate:fixtures": "node ./src/validate-fixtures.js",
+    "test:bridge": "NODE_OPTIONS=--experimental-vm-modules jest bridge-harness.spec.js",
+    "test:simulator": "NODE_OPTIONS=--experimental-vm-modules jest contract.spec.js"
   },
   "dependencies": {
     "ajv": "^8.17.1",

@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.example/schemas/adam/dlq-envelope/v1.json",
+  "title": "ADAM Dead-Letter Envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "dlqVersion",
+    "receivedAt",
+    "source",
+    "error",
+    "original"
+  ],
+  "properties": {
+    "dlqVersion": {
+      "type": "string",
+      "const": "1"
+    },
+    "receivedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "broker",
+        "sourceTopic"
+      ],
+      "properties": {
+        "broker": {
+          "type": "string",
+          "enum": [
+            "kafka",
+            "sqs",
+            "pubsub",
+            "nats",
+            "rabbitmq",
+            "other"
+          ]
+        },
+        "sourceTopic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subscription": {
+          "type": "string"
+        },
+        "queueUrl": {
+          "type": "string"
+        },
+        "partition": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "deliveryAttempt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "key": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "schemaId": {
+          "type": "string"
+        },
+        "stack": {
+          "type": "string"
+        }
+      }
+    },
+    "correlation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "campaignId",
+        "experimentRunId",
+        "traceId"
+      ],
+      "properties": {
+        "campaignId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "experimentRunId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "traceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instrumentControllerId": {
+          "type": "string"
+        }
+      }
+    },
+    "original": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "envelope"
+      ],
+      "properties": {
+        "envelope": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "raw": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

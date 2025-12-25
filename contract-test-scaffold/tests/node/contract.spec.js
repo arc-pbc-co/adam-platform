@@ -63,11 +63,10 @@ afterAll(async () => {
 test("PerformAction emits InstrumentActionCompletion that matches schema", async () => {
   const events = [];
   const es = new EventSource(`${BASE}/events`);
-  // SSE sends named events, so we need addEventListener for specific event types
-  es.addEventListener("InstrumentActionCompletion", (msg) => {
+  es.onmessage = (msg) => {
     const data = JSON.parse(msg.data);
     events.push(data);
-  });
+  };
 
   const cmd = { actionName: "HOME", actionOptions: [{ key: "speed", value: "fast" }] };
   const r = await fetch(`${BASE}/v0.1/actions/perform`, {
@@ -98,8 +97,7 @@ test("PerformAction emits InstrumentActionCompletion that matches schema", async
 test("StartActivity emits status sequence and produces data products", async () => {
   const events = [];
   const es = new EventSource(`${BASE}/events`);
-  // SSE sends named events, so we need addEventListener for specific event types
-  es.addEventListener("InstrumentActivityStatusChange", (msg) => events.push(JSON.parse(msg.data)));
+  es.onmessage = (msg) => events.push(JSON.parse(msg.data));
 
   const req = { activityName: "BUILD", activityOptions: [{ key: "layer_height_mm", value: "0.05" }] };
   const r = await fetch(`${BASE}/v0.1/activities/start`, {
