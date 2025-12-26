@@ -284,29 +284,28 @@ export function GodModeDashboard({
 
       {/* Header with Resource Bar and View Toggle */}
       <header className={styles.header}>
-        {/* Back/Logout buttons */}
-        {(onBack || onLogout) && (
-          <div className={styles.headerNav}>
-            {onBack && (
-              <button
-                className={styles.navButton}
-                onClick={onBack}
-                title="Back to Home"
-              >
-                <ArrowLeft size={16} />
-              </button>
-            )}
-            {onLogout && (
-              <button
-                className={styles.navButton}
-                onClick={onLogout}
-                title="Sign Out"
-              >
-                <LogOut size={16} />
-              </button>
-            )}
-          </div>
-        )}
+        {/* Logo and Back/Logout buttons */}
+        <div className={styles.headerNav}>
+          <img src="/arc-logo.png" alt="Arc" className={styles.headerLogo} />
+          {onBack && (
+            <button
+              className={styles.navButton}
+              onClick={onBack}
+              title="Back to Home"
+            >
+              <ArrowLeft size={16} />
+            </button>
+          )}
+          {onLogout && (
+            <button
+              className={styles.navButton}
+              onClick={onLogout}
+              title="Sign Out"
+            >
+              <LogOut size={16} />
+            </button>
+          )}
+        </div>
         <AdamResourceBar resources={resources} />
 
         <div className={styles.viewToggle}>

@@ -105,18 +105,11 @@
   );
 }
 
-.logoIcon {
-  width: 64px;
-  height: 64px;
+.logoImage {
+  width: 80px;
+  height: 80px;
   margin: 0 auto var(--space-4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-default);
-  border-radius: 50%;
-  color: var(--accent-primary);
-  box-shadow: var(--glow-primary-soft);
+  object-fit: contain;
 }
 
 .title {

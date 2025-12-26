@@ -347,7 +347,7 @@ Or type **help** for more commands.`,
           </button>
           <div className={styles.divider} />
           <div className={styles.logo}>
-            <div className={styles.logoIcon} />
+            <img src="/arc-logo.png" alt="Arc" className={styles.logoImage} />
             <span>ADAM Platform</span>
           </div>
           <div className={styles.divider} />

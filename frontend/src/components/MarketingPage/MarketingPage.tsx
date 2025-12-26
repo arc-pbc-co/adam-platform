@@ -52,7 +52,7 @@ export function MarketingPage({ onOpenPlatform }: MarketingPageProps) {
             className={styles.logo}
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
-            <div className={styles.logoIcon} />
+            <img src="/arc-logo.png" alt="Arc" className={styles.logoImage} />
             <span className={styles.logoText}>ARC IMPACT</span>
           </div>
 
@@ -294,7 +294,10 @@ export function MarketingPage({ onOpenPlatform }: MarketingPageProps) {
       <footer className={styles.footer}>
         <div className={styles.footerContent}>
           <div className={styles.footerBrand}>
-            <h2>ARC IMPACT</h2>
+            <div className={styles.footerLogo}>
+              <img src="/arc-logo.png" alt="Arc" className={styles.footerLogoImage} />
+              <h2>ARC IMPACT</h2>
+            </div>
             <p>
               Redefining the material foundation of the 21st century economy.
             </p>
