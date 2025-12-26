@@ -286,7 +286,7 @@ export function GodModeDashboard({
       <header className={styles.header}>
         {/* Logo and Back/Logout buttons */}
         <div className={styles.headerNav}>
-          <img src="/arc-logo.png" alt="Arc" className={styles.headerLogo} />
+          <img src="/arc-logo.jpg" alt="Arc" className={styles.headerLogo} />
           {onBack && (
             <button
               className={styles.navButton}

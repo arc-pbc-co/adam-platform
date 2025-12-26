@@ -52,7 +52,7 @@ export function MarketingPage({ onOpenPlatform }: MarketingPageProps) {
             className={styles.logo}
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
-            <img src="/arc-logo.png" alt="Arc" className={styles.logoImage} />
+            <img src="/arc-logo.jpg" alt="Arc" className={styles.logoImage} />
             <span className={styles.logoText}>ARC IMPACT</span>
           </div>
 
@@ -295,7 +295,7 @@ export function MarketingPage({ onOpenPlatform }: MarketingPageProps) {
         <div className={styles.footerContent}>
           <div className={styles.footerBrand}>
             <div className={styles.footerLogo}>
-              <img src="/arc-logo.png" alt="Arc" className={styles.footerLogoImage} />
+              <img src="/arc-logo.jpg" alt="Arc" className={styles.footerLogoImage} />
               <h2>ARC IMPACT</h2>
             </div>
             <p>
