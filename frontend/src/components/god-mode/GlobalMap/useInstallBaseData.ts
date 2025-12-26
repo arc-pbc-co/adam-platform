@@ -12,8 +12,28 @@ interface UseInstallBaseDataReturn {
   error: Error | null
 }
 
-// Geocode a site based on city/state
-function geocodeSite(site: Site): Site {
+// Extended site type that may have latitude/longitude from JSON
+interface RawSite extends Omit<Site, 'lat' | 'lng'> {
+  latitude?: number
+  longitude?: number
+  lat?: number
+  lng?: number
+}
+
+// Geocode a site based on city/state or use existing coordinates
+function geocodeSite(rawSite: RawSite): Site {
+  const site = rawSite as Site
+
+  // If site already has coordinates from JSON (latitude/longitude), use them
+  if (rawSite.latitude && rawSite.longitude) {
+    return { ...site, lat: rawSite.latitude, lng: rawSite.longitude }
+  }
+
+  // If site already has lat/lng, return as is
+  if (site.lat && site.lng) {
+    return site
+  }
+
   // Try city-specific coordinates first
   const cityKey = site.city.toLowerCase()
   if (CITY_COORDS[cityKey]) {
@@ -56,7 +76,9 @@ export function useInstallBaseData(url: string): UseInstallBaseDataReturn {
           throw new Error(`Failed to fetch: ${response.statusText}`)
         }
         const data = await response.json()
-        setRawSites(data)
+        // Handle both { sites: [...] } and flat array formats
+        const sites = Array.isArray(data) ? data : (data.sites || [])
+        setRawSites(sites)
         setError(null)
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'))

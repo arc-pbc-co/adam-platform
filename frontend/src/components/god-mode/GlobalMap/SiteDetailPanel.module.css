@@ -229,3 +229,87 @@
   color: white;
   box-shadow: var(--glow-danger);
 }
+
+/* Printer List */
+.printerList {
+  margin-bottom: var(--space-3);
+  border: var(--border-thin) solid var(--god-steel-700);
+  background: var(--god-steel-900);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.printerListHeader {
+  padding: var(--space-2);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--god-steel-400);
+  border-bottom: var(--border-thin) solid var(--god-steel-700);
+  background: var(--god-steel-850);
+}
+
+.printerGroup {
+  border-bottom: var(--border-thin) solid var(--god-steel-800);
+}
+
+.printerGroup:last-child {
+  border-bottom: none;
+}
+
+.printerGroupHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--god-steel-300);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.printerGroupHeader:hover {
+  background: var(--god-steel-800);
+}
+
+.printerGroupHeader.shop {
+  color: var(--god-primary-400);
+}
+
+.printerGroupHeader.studio {
+  color: #a855f7;
+}
+
+.printerGroupHeader.innx {
+  color: var(--god-energy-400);
+}
+
+.printerCount {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--god-steel-500);
+}
+
+.printerSerials {
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.printerSerial {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--god-steel-500);
+  padding: 2px 0;
+  border-bottom: 1px solid var(--god-steel-800);
+}
+
+.printerSerial:last-child {
+  border-bottom: none;
+}

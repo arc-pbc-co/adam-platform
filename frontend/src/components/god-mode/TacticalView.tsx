@@ -3,7 +3,7 @@
  * Main view for real-time printer monitoring
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSelection, useEventLog } from '../../hooks'
 import { TacticalMap, MOCK_PRINTERS } from './TacticalMap'
@@ -15,9 +15,64 @@ import type { PrinterUnit, PrinterCommand } from './TacticalMap/types'
 import type { SelectedEntity } from './GodModeLayout'
 import styles from './TacticalView.module.css'
 
-export function TacticalView() {
-  // Printer selection state
-  const [printers] = useState<PrinterUnit[]>(MOCK_PRINTERS)
+interface TacticalViewProps {
+  // Printers from selected sites (from GlobalMap)
+  sitePrinters?: PrinterUnit[]
+}
+
+// Calculate positions for printers grouped by site
+function calculateSiteGroupedPositions(printers: PrinterUnit[]): PrinterUnit[] {
+  // Group printers by labId (site)
+  const siteGroups = new Map<string, PrinterUnit[]>()
+  printers.forEach((p) => {
+    const existing = siteGroups.get(p.labId) || []
+    existing.push(p)
+    siteGroups.set(p.labId, existing)
+  })
+
+  const sites = Array.from(siteGroups.entries())
+  const result: PrinterUnit[] = []
+
+  // Layout configuration
+  const PRINTERS_PER_ROW = 6
+  const SITE_PADDING = 5 // percentage padding between sites
+  const PRINTER_SPACING = 8 // percentage spacing between printers
+
+  let currentY = 10 // Start position
+
+  sites.forEach(([_siteId, sitePrinters]) => {
+    const rows = Math.ceil(sitePrinters.length / PRINTERS_PER_ROW)
+    const siteHeight = rows * PRINTER_SPACING + SITE_PADDING
+
+    sitePrinters.forEach((printer, printerIndex) => {
+      const row = Math.floor(printerIndex / PRINTERS_PER_ROW)
+      const col = printerIndex % PRINTERS_PER_ROW
+
+      result.push({
+        ...printer,
+        position: {
+          x: 15 + col * PRINTER_SPACING,
+          y: currentY + row * PRINTER_SPACING,
+        },
+      })
+    })
+
+    currentY += siteHeight + SITE_PADDING
+  })
+
+  return result
+}
+
+export function TacticalView({ sitePrinters = [] }: TacticalViewProps) {
+  // Use site printers if available, otherwise fall back to mock data
+  const printers = useMemo(() => {
+    if (sitePrinters.length > 0) {
+      // Calculate positions for site-grouped printers
+      return calculateSiteGroupedPositions(sitePrinters)
+    }
+    return MOCK_PRINTERS
+  }, [sitePrinters])
+
   const selection = useSelection(printers)
 
   // Minimap entity selection (for showing on minimap)

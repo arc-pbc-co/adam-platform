@@ -2,6 +2,7 @@
  * SiteDetailPanel - Shows details of hovered/selected site
  */
 
+import { useState, useMemo } from 'react'
 import {
   Building2,
   Mail,
@@ -10,8 +11,12 @@ import {
   MapPin,
   Plus,
   Minus,
+  ChevronDown,
+  ChevronRight,
+  Factory,
+  Microscope,
 } from 'lucide-react'
-import type { Site } from './types'
+import type { Site, Printer as PrinterType } from './types'
 import { TIER_COLORS } from './types'
 import styles from './SiteDetailPanel.module.css'
 
@@ -22,12 +27,55 @@ interface SiteDetailPanelProps {
   onDeselect: () => void
 }
 
+// Group printers by product line
+function groupPrintersByLine(printers: PrinterType[]) {
+  const groups: Record<string, PrinterType[]> = {
+    Shop: [],
+    Studio: [],
+    InnX: [],
+  }
+  printers.forEach((p) => {
+    if (groups[p.productLine]) {
+      groups[p.productLine].push(p)
+    }
+  })
+  return groups
+}
+
+// Product line icons
+const PRODUCT_ICONS: Record<string, typeof Printer> = {
+  Shop: Factory,
+  Studio: Printer,
+  InnX: Microscope,
+}
+
 export function SiteDetailPanel({
   site,
   isSelected,
   onSelect,
   onDeselect,
 }: SiteDetailPanelProps) {
+  // Track which product lines are expanded
+  const [expandedLines, setExpandedLines] = useState<Set<string>>(new Set(['Shop', 'Studio', 'InnX']))
+
+  // Group printers by product line
+  const printerGroups = useMemo(() => {
+    if (!site?.printers) return { Shop: [], Studio: [], InnX: [] }
+    return groupPrintersByLine(site.printers)
+  }, [site?.printers])
+
+  const toggleLine = (line: string) => {
+    setExpandedLines((prev) => {
+      const next = new Set(prev)
+      if (next.has(line)) {
+        next.delete(line)
+      } else {
+        next.add(line)
+      }
+      return next
+    })
+  }
+
   if (!site) {
     return (
       <div className={styles.panel}>
@@ -92,6 +140,43 @@ export function SiteDetailPanel({
           <span className={`${styles.productBadge} ${styles.innx}`}>InnX</span>
         )}
       </div>
+
+      {/* Printer List */}
+      {site.printers && site.printers.length > 0 && (
+        <div className={styles.printerList}>
+          <div className={styles.printerListHeader}>
+            <span>Equipment ({site.printers.length})</span>
+          </div>
+          {(['Shop', 'Studio', 'InnX'] as const).map((line) => {
+            const printers = printerGroups[line]
+            if (printers.length === 0) return null
+            const isExpanded = expandedLines.has(line)
+            const Icon = PRODUCT_ICONS[line]
+            return (
+              <div key={line} className={styles.printerGroup}>
+                <button
+                  className={`${styles.printerGroupHeader} ${styles[line.toLowerCase()]}`}
+                  onClick={() => toggleLine(line)}
+                >
+                  {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <Icon size={12} />
+                  <span>{line}</span>
+                  <span className={styles.printerCount}>({printers.length})</span>
+                </button>
+                {isExpanded && (
+                  <div className={styles.printerSerials}>
+                    {printers.map((p) => (
+                      <div key={p.serialNumber} className={styles.printerSerial}>
+                        {p.serialNumber}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Contact */}
       {site.contactName && (

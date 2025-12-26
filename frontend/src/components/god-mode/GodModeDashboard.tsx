@@ -79,6 +79,73 @@ function savePreferences(prefs: UserPreferences): void {
 
 // Import Site type from GlobalMap
 import type { Site } from './GlobalMap/types'
+import type { PrinterStatus } from './TacticalMap/types'
+
+// Convert product line to printer model
+function productLineToModel(productLine: string): PrinterUnit['model'] {
+  switch (productLine) {
+    case 'Shop':
+      return 'Shop System'
+    case 'Studio':
+      return 'Studio System'
+    case 'InnX':
+      return 'InnoventX'
+    default:
+      return 'Studio System'
+  }
+}
+
+// Get random simulated status
+function getSimulatedStatus(): PrinterStatus {
+  const statuses: PrinterStatus[] = ['idle', 'working', 'idle', 'working', 'calibrating', 'offline', 'error']
+  return statuses[Math.floor(Math.random() * statuses.length)]
+}
+
+// Convert sites to PrinterUnits for TacticalView
+function sitesToPrinterUnits(sites: Site[]): PrinterUnit[] {
+  const printers: PrinterUnit[] = []
+
+  sites.forEach((site) => {
+    if (!site.printers) return
+
+    site.printers.forEach((printer) => {
+      const status = getSimulatedStatus()
+      const isWorking = status === 'working'
+
+      printers.push({
+        id: printer.serialNumber,
+        name: `${printer.productLine} ${printer.serialNumber}`,
+        model: productLineToModel(printer.productLine),
+        status,
+        position: {
+          // Position will be calculated by TacticalMap based on site grouping
+          x: 0,
+          y: 0
+        },
+        labId: site.id,
+        labName: site.name,
+        jobProgress: isWorking ? Math.floor(Math.random() * 100) : null,
+        jobName: isWorking ? 'Active Job' : null,
+        health: {
+          temperature: status === 'offline' ? 0 : 150 + Math.floor(Math.random() * 100),
+          humidity: status === 'offline' ? 0 : 40 + Math.floor(Math.random() * 20),
+          uptime: Math.floor(Math.random() * 2000),
+          errorCount: status === 'error' ? Math.floor(Math.random() * 5) + 1 : 0,
+        },
+        capabilities: {
+          canPrint: status !== 'offline' && status !== 'error',
+          canQueue: status !== 'offline',
+          canCalibrate: status !== 'offline',
+        },
+        lastPing: status === 'offline'
+          ? new Date(Date.now() - 3600000)
+          : new Date(),
+      })
+    })
+  })
+
+  return printers
+}
 
 interface GodModeDashboardProps {
   onOnboardComplete?: (sites: Site[]) => void
@@ -96,6 +163,20 @@ export function GodModeDashboard({
 
   // UI state
   const [showShortcutsModal, setShowShortcutsModal] = useState(false)
+
+  // Shared selection state (received from GlobalMap via callback)
+  const [selectedSites, setSelectedSites] = useState<Site[]>([])
+
+  // Convert selected sites to printer units for TacticalView
+  const sitePrinters = useMemo(() => {
+    if (selectedSites.length === 0) return []
+    return sitesToPrinterUnits(selectedSites)
+  }, [selectedSites])
+
+  // Callback when GlobalMap updates selection
+  const handleSelectionChange = useCallback((_ids: Set<string>, sites: Site[]) => {
+    setSelectedSites(sites)
+  }, [])
 
   // WebSocket connection
   let wsContext: ReturnType<typeof useWebSocketContext> | null = null
@@ -286,7 +367,7 @@ export function GodModeDashboard({
       <header className={styles.header}>
         {/* Logo and Back/Logout buttons */}
         <div className={styles.headerNav}>
-          <img src="/arc-logo.jpg" alt="Arc" className={styles.headerLogo} />
+          <img src="/arc-logo.png" alt="Arc" className={styles.headerLogo} />
           {onBack && (
             <button
               className={styles.navButton}
@@ -370,9 +451,12 @@ export function GodModeDashboard({
         minHeight: 0
       }}>
         {preferences.viewMode === 'global' ? (
-          <GlobalMap onOnboardComplete={onOnboardComplete} />
+          <GlobalMap
+            onOnboardComplete={onOnboardComplete}
+            onSelectionChange={handleSelectionChange}
+          />
         ) : (
-          <TacticalView />
+          <TacticalView sitePrinters={sitePrinters} />
         )}
       </main>
 

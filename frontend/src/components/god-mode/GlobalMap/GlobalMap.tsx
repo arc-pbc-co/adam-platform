@@ -31,15 +31,27 @@ const US_TOPO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json'
 
 interface GlobalMapProps {
   onOnboardComplete?: (sites: Site[]) => void
+  onSelectionChange?: (ids: Set<string>, sites: Site[]) => void
 }
 
-export function GlobalMap({ onOnboardComplete }: GlobalMapProps = {}) {
+export function GlobalMap({
+  onOnboardComplete,
+  onSelectionChange,
+}: GlobalMapProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
 
   // Render key for resize handling (currently disabled for debugging)
   // const [renderKey, setRenderKey] = useState(0)
+
+  // Selection state - always use internal state, notify parent via callback
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  // Helper to update selection
+  const updateSelectedIds = useCallback((newIds: Set<string>) => {
+    setSelectedIds(newIds)
+  }, [])
+
   const [hoveredSite, setHoveredSite] = useState<Site | null>(null)
   const [filters, setFilters] = useState<MapFiltersType>({
     productLines: [],
@@ -85,9 +97,12 @@ export function GlobalMap({ onOnboardComplete }: GlobalMapProps = {}) {
     return sites.filter((site) => {
       // Product line filter
       if (filters.productLines.length > 0) {
-        const hasMatch = filters.productLines.some((pl) =>
-          site.productLines.includes(pl)
-        )
+        const hasMatch = filters.productLines.some((pl) => {
+          if (pl === 'Shop') return site.hasShop
+          if (pl === 'Studio') return site.hasStudio
+          if (pl === 'InnX') return site.hasInnX
+          return false
+        })
         if (!hasMatch) return false
       }
 
@@ -121,6 +136,13 @@ export function GlobalMap({ onOnboardComplete }: GlobalMapProps = {}) {
     return sites.filter((s) => selectedIds.has(s.id))
   }, [sites, selectedIds])
 
+  // Notify parent of selection changes
+  useEffect(() => {
+    if (onSelectionChange) {
+      onSelectionChange(selectedIds, selectedSites)
+    }
+  }, [selectedIds, selectedSites, onSelectionChange])
+
   // Available states for filter
   const availableStates = useMemo(() => {
     return [...new Set(sites.map((s) => s.state))].sort()
@@ -146,32 +168,28 @@ export function GlobalMap({ onOnboardComplete }: GlobalMapProps = {}) {
 
   // Selection handlers
   const handleSiteSelect = useCallback((siteId: string, additive = false) => {
-    setSelectedIds((prev) => {
-      const next = new Set(additive ? prev : [])
-      if (prev.has(siteId) && additive) {
-        next.delete(siteId)
-      } else {
-        next.add(siteId)
-      }
-      return next
-    })
-  }, [])
+    const next = new Set(additive ? selectedIds : [])
+    if (selectedIds.has(siteId) && additive) {
+      next.delete(siteId)
+    } else {
+      next.add(siteId)
+    }
+    updateSelectedIds(next)
+  }, [selectedIds, updateSelectedIds])
 
   const handleClearSelection = useCallback(() => {
-    setSelectedIds(new Set())
-  }, [])
+    updateSelectedIds(new Set())
+  }, [updateSelectedIds])
 
   const handleSelectAll = useCallback(() => {
-    setSelectedIds(new Set(filteredSites.map((s) => s.id)))
-  }, [filteredSites])
+    updateSelectedIds(new Set(filteredSites.map((s) => s.id)))
+  }, [filteredSites, updateSelectedIds])
 
   const handleRemoveFromSelection = useCallback((siteId: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      next.delete(siteId)
-      return next
-    })
-  }, [])
+    const next = new Set(selectedIds)
+    next.delete(siteId)
+    updateSelectedIds(next)
+  }, [selectedIds, updateSelectedIds])
 
   // Onboarding handlers
   const handleOpenOnboardingModal = useCallback(() => {
@@ -191,7 +209,7 @@ export function GlobalMap({ onOnboardComplete }: GlobalMapProps = {}) {
 
       // Close modal and clear selection
       setShowOnboardingModal(false)
-      setSelectedIds(new Set())
+      updateSelectedIds(new Set())
 
       // If onOnboardComplete callback is provided, navigate to platform immediately
       // This skips the API call for now since we're in development
@@ -213,7 +231,7 @@ export function GlobalMap({ onOnboardComplete }: GlobalMapProps = {}) {
         setIsOnboardingLoading(false)
       }
     },
-    [startOnboarding, sites, selectedIds, onOnboardComplete]
+    [startOnboarding, sites, selectedIds, onOnboardComplete, updateSelectedIds]
   )
 
   const handleCloseProgress = useCallback(() => {

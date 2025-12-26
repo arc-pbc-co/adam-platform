@@ -2,6 +2,11 @@
  * Types for the GlobalMap install base visualization
  */
 
+export interface Printer {
+  serialNumber: string
+  productLine: 'Shop' | 'Studio' | 'InnX'
+}
+
 export interface Site {
   id: string
   name: string
@@ -13,7 +18,7 @@ export interface Site {
   lat?: number
   lng?: number
   installations: number
-  productLines: string
+  productLines: number
   priorityTier: 'A' | 'B' | 'C'
   priorityScore: number
   contactName: string | null
@@ -21,6 +26,7 @@ export interface Site {
   hasShop: boolean
   hasStudio: boolean
   hasInnX: boolean
+  printers: Printer[]
 }
 
 export interface MapFilters {
