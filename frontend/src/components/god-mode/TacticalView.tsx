@@ -5,10 +5,9 @@
 
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useSelection, useAdamResources, useEventLog } from '../../hooks'
+import { useSelection, useEventLog } from '../../hooks'
 import { TacticalMap, MOCK_PRINTERS } from './TacticalMap'
 import { TacticalCommandPanel } from './TacticalCommandPanel'
-import { AdamResourceBar } from './ResourceBar'
 import { PrinterSelectionPanel } from './PrinterSelectionPanel'
 import { Minimap } from './Minimap'
 import { EventLog } from './EventLog'
@@ -29,15 +28,6 @@ export function TacticalView() {
     simulateEvents: true,
     simulateInterval: 4000,
     maxEvents: 100,
-  })
-
-  // Resource metrics using the new hook
-  const { resources } = useAdamResources({
-    simulateUpdates: true,
-    pollInterval: 3000,
-    config: {
-      agents: { max: printers.length },
-    },
   })
 
   // Handle commands from the command panel
@@ -90,16 +80,8 @@ export function TacticalView() {
   const selectedPrinters = selection.selectedItems
 
   return (
-    <div className={`${styles.layout} scan-line`}>
-      {/* Scanline overlay */}
-      <div className="scanline-overlay" />
-
-      {/* Resource Bar - Top */}
-      <header className={styles.resourceBar}>
-        <AdamResourceBar resources={resources} />
-      </header>
-
-      {/* Main Content Area */}
+    <div className={styles.layout}>
+      {/* Main Content Area - Resource bar handled by parent GodModeDashboard */}
       <main className={styles.mainContent}>
         {/* Main Viewport - Tactical Map */}
         <section className={styles.viewport}>

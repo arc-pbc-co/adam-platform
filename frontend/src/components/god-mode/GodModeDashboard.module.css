@@ -7,7 +7,7 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   overflow: hidden;
   background: var(--bg-void);
   position: relative;
@@ -24,6 +24,47 @@
   );
   border-bottom: var(--border-medium) solid var(--border-default);
   z-index: var(--z-sticky);
+  overflow: visible;
+}
+
+/* Header Navigation (Back/Logout buttons) */
+.headerNav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-3);
+  border-right: var(--border-thin) solid var(--border-subtle);
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.navButton:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.navButton:active {
+  background: var(--bg-elevated);
+}
+
+/* ResourceBar should shrink to make room for tabs */
+.header > *:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 /* View Toggle Tabs */
@@ -31,6 +72,7 @@
   display: flex;
   margin-left: var(--space-4);
   border-left: var(--border-thin) solid var(--border-subtle);
+  flex-shrink: 0;
 }
 
 .viewTab {
@@ -82,6 +124,7 @@
   gap: var(--space-2);
   margin-left: auto;
   padding: 0 var(--space-3);
+  flex-shrink: 0;
 }
 
 .connectionStatus {
@@ -96,6 +139,8 @@
   color: var(--accent-danger);
   background: color-mix(in srgb, var(--accent-danger) 15%, transparent);
   border: var(--border-thin) solid var(--accent-danger);
+  min-width: 70px;
+  justify-content: center;
 }
 
 .connectionStatus.connected {
@@ -137,6 +182,11 @@
   grid-template-columns: 1fr var(--layout-sidebar-width);
 }
 
+/* Ensure viewport takes remaining space */
+.main > .viewport {
+  min-width: 0;
+}
+
 /* Viewport */
 .viewport {
   position: relative;
@@ -149,6 +199,7 @@
 .viewContainer {
   position: absolute;
   inset: 0;
+  overflow: hidden;
 }
 
 /* Sidebar */
@@ -178,12 +229,16 @@
 
 /* Footer */
 .footer {
+  height: 180px;
+  max-height: 180px;
+  flex-shrink: 0;
   border-top: var(--border-medium) solid var(--border-default);
   background: linear-gradient(
     180deg,
     var(--bg-secondary) 0%,
     var(--bg-primary) 100%
   );
+  overflow: hidden;
 }
 
 /* Panel entrance animation */

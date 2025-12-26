@@ -1,84 +1,90 @@
-import { useState } from 'react'
-import { GodModeLayout } from './components/god-mode/GodModeLayout'
-import { GlobalMap } from './components/god-mode/GlobalMap'
-import { TacticalView } from './components/god-mode/TacticalView'
+/**
+ * ADAM Platform - Unified App Entry Point
+ *
+ * Navigation Flow:
+ * Marketing Page → Login → God Mode Dashboard → [Onboard] → ADAM Platform
+ *
+ * All views are managed through the AppContext provider which handles:
+ * - User authentication state
+ * - Current view routing
+ * - Onboarded sites data persistence
+ */
 
-type ViewMode = 'tactical' | 'labs' | 'install-base'
+import { GodModeDashboard } from './components/god-mode'
+import { LoginScreen } from './components/LoginScreen'
+import { MarketingPage } from './components/MarketingPage'
+import { IDEPlatform } from './components/IDEPlatform'
+import { WebSocketProvider } from './contexts/WebSocketContext'
+import { AppProvider, useAppContext } from './contexts/AppContext'
+import './styles/god-mode-theme.css'
 
+/**
+ * AppRouter - Handles view switching based on current state
+ */
+function AppRouter() {
+  const {
+    currentView,
+    user,
+    onboardedSites,
+    login,
+    logout,
+    navigateTo,
+    onboardSites,
+  } = useAppContext()
+
+  switch (currentView) {
+    case 'marketing':
+      return (
+        <MarketingPage
+          onOpenPlatform={() => navigateTo('login')}
+        />
+      )
+
+    case 'login':
+      return (
+        <LoginScreen
+          onLogin={login}
+          onBack={() => navigateTo('marketing')}
+        />
+      )
+
+    case 'godmode':
+      return (
+        <GodModeDashboard
+          onOnboardComplete={onboardSites}
+          onBack={() => navigateTo('marketing')}
+          onLogout={logout}
+        />
+      )
+
+    case 'platform':
+      return (
+        <IDEPlatform
+          onBack={() => navigateTo('godmode')}
+          user={user}
+          sites={onboardedSites}
+        />
+      )
+
+    default:
+      return (
+        <MarketingPage
+          onOpenPlatform={() => navigateTo('login')}
+        />
+      )
+  }
+}
+
+/**
+ * App - Root component with providers
+ */
 function App() {
-  const [viewMode, setViewMode] = useState<ViewMode>('tactical')
-
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* View Mode Switcher */}
-      <nav
-        style={{
-          display: 'flex',
-          gap: '8px',
-          padding: '8px 16px',
-          background: 'var(--bg-secondary)',
-          borderBottom: '2px solid var(--border-default)',
-        }}
-      >
-        <ViewModeButton
-          active={viewMode === 'tactical'}
-          onClick={() => setViewMode('tactical')}
-        >
-          Tactical Map
-        </ViewModeButton>
-        <ViewModeButton
-          active={viewMode === 'labs'}
-          onClick={() => setViewMode('labs')}
-        >
-          Labs Network
-        </ViewModeButton>
-        <ViewModeButton
-          active={viewMode === 'install-base'}
-          onClick={() => setViewMode('install-base')}
-        >
-          Install Base Map
-        </ViewModeButton>
-      </nav>
-
-      {/* Main View */}
-      <main style={{ flex: 1, minHeight: 0 }}>
-        {viewMode === 'tactical' && <TacticalView />}
-        {viewMode === 'labs' && <GodModeLayout />}
-        {viewMode === 'install-base' && <GlobalMap />}
-      </main>
-    </div>
-  )
-}
-
-interface ViewModeButtonProps {
-  active: boolean
-  onClick: () => void
-  children: React.ReactNode
-}
-
-function ViewModeButton({ active, onClick, children }: ViewModeButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        padding: '8px 16px',
-        background: active
-          ? 'color-mix(in srgb, var(--accent-primary) 30%, var(--bg-tertiary))'
-          : 'var(--bg-tertiary)',
-        border: '1px solid',
-        borderColor: active ? 'var(--accent-primary)' : 'var(--border-default)',
-        color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
-        fontFamily: 'var(--font-display)',
-        fontSize: '12px',
-        fontWeight: 600,
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        cursor: 'pointer',
-        transition: 'all 0.15s ease',
-      }}
-    >
-      {children}
-    </button>
+    <AppProvider>
+      <WebSocketProvider>
+        <AppRouter />
+      </WebSocketProvider>
+    </AppProvider>
   )
 }
 

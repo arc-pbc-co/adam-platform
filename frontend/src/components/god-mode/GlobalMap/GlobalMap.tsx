@@ -12,7 +12,8 @@
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react'
 import * as d3 from 'd3'
 import * as topojson from 'topojson-client'
-import { motion, AnimatePresence } from 'framer-motion'
+// Motion temporarily disabled for debugging sidebar visibility
+// import { motion, AnimatePresence } from 'framer-motion'
 import { useInstallBaseData } from './useInstallBaseData'
 import { MapFilters } from './MapFilters'
 import { MapLegend } from './MapLegend'
@@ -28,11 +29,16 @@ import styles from './GlobalMap.module.css'
 
 const US_TOPO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json'
 
-export function GlobalMap() {
+interface GlobalMapProps {
+  onOnboardComplete?: (sites: Site[]) => void
+}
+
+export function GlobalMap({ onOnboardComplete }: GlobalMapProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
 
-  const [dimensions, setDimensions] = useState({ width: 800, height: 500 })
+  // Render key for resize handling (currently disabled for debugging)
+  // const [renderKey, setRenderKey] = useState(0)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [hoveredSite, setHoveredSite] = useState<Site | null>(null)
   const [filters, setFilters] = useState<MapFiltersType>({
@@ -120,19 +126,23 @@ export function GlobalMap() {
     return [...new Set(sites.map((s) => s.state))].sort()
   }, [sites])
 
-  // Handle responsive sizing
-  useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect()
-        setDimensions({ width: rect.width, height: rect.height })
-      }
-    }
-
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  // Handle window resize - DISABLED FOR DEBUGGING
+  // useEffect(() => {
+  //   let timeoutId: ReturnType<typeof setTimeout>
+  //
+  //   const handleResize = () => {
+  //     clearTimeout(timeoutId)
+  //     timeoutId = setTimeout(() => {
+  //       setRenderKey((k) => k + 1)
+  //     }, 150) // Debounce resize events
+  //   }
+  //
+  //   window.addEventListener('resize', handleResize)
+  //   return () => {
+  //     clearTimeout(timeoutId)
+  //     window.removeEventListener('resize', handleResize)
+  //   }
+  // }, [])
 
   // Selection handlers
   const handleSiteSelect = useCallback((siteId: string, additive = false) => {
@@ -173,21 +183,37 @@ export function GlobalMap() {
   }, [])
 
   const handleConfirmOnboarding = useCallback(
-    async (request: OnboardingRequest) => {
+    async (_request: OnboardingRequest) => {
+      setIsOnboardingLoading(true)
+
+      // Get selected sites before clearing
+      const onboardedSites = sites.filter(s => selectedIds.has(s.id))
+
+      // Close modal and clear selection
+      setShowOnboardingModal(false)
+      setSelectedIds(new Set())
+
+      // If onOnboardComplete callback is provided, navigate to platform immediately
+      // This skips the API call for now since we're in development
+      if (onOnboardComplete && onboardedSites.length > 0) {
+        setIsOnboardingLoading(false)
+        onOnboardComplete(onboardedSites)
+        return
+      }
+
+      // Otherwise try to start actual onboarding with API
       try {
-        setIsOnboardingLoading(true)
-        await startOnboarding(request)
-        setShowOnboardingModal(false)
+        await startOnboarding(_request)
         setShowOnboardingProgress(true)
-        // Clear selection after starting onboarding
-        setSelectedIds(new Set())
       } catch (error) {
         console.error('Failed to start onboarding:', error)
+        // Still show progress modal even if API fails (for demo purposes)
+        setShowOnboardingProgress(true)
       } finally {
         setIsOnboardingLoading(false)
       }
     },
-    [startOnboarding]
+    [startOnboarding, sites, selectedIds, onOnboardComplete]
   )
 
   const handleCloseProgress = useCallback(() => {
@@ -218,18 +244,24 @@ export function GlobalMap() {
     }
   }, [cancelOnboarding, clearStatus])
 
-  // D3 map rendering
+  // D3 map rendering - TEMPORARILY using fixed dimensions
   useEffect(() => {
     if (!svgRef.current || loading) return
+
+    // Use fixed dimensions to prevent layout jitter
+    const width = 800
+    const height = 500
 
     const svg = d3.select(svgRef.current)
     svg.selectAll('*').remove()
 
-    const { width, height } = dimensions
+    // Set SVG viewBox to match container
+    svg.attr('viewBox', `0 0 ${width} ${height}`)
+    svg.attr('preserveAspectRatio', 'xMidYMid meet')
 
     // Create projection
     const projection = d3.geoAlbersUsa()
-      .scale(width * 1.2)
+      .scale(width * 1.1)
       .translate([width / 2, height / 2])
 
     const path = d3.geoPath().projection(projection)
@@ -399,7 +431,7 @@ export function GlobalMap() {
     return () => {
       svg.selectAll('*').remove()
     }
-  }, [dimensions, filteredSites, selectedIds, loading, handleSiteSelect])
+  }, [filteredSites, selectedIds, loading, handleSiteSelect])
 
   // Stats
   const totalPrinters = filteredSites.reduce((sum, s) => sum + s.installations, 0)
@@ -432,45 +464,54 @@ export function GlobalMap() {
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerTitle}>
-          <h2>INSTALL BASE</h2>
+          <h2>GLOBAL INSTALL BASE</h2>
           <div className={styles.headerStats}>
             <span className={styles.statItem}>
               <span className={styles.statValue}>{filteredSites.length}</span> sites
             </span>
             <span className={styles.statDivider}>|</span>
             <span className={styles.statItem}>
-              <span className={styles.statValue}>{totalPrinters}</span> printers
+              <span className={`${styles.statValue} ${styles.tierA}`}>{tierACounts}</span> Tier A
             </span>
             <span className={styles.statDivider}>|</span>
             <span className={styles.statItem}>
-              <span className={`${styles.statValue} ${styles.tierA}`}>{tierACounts}</span> Tier A
-            </span>
-            <span className={styles.statItem}>
               <span className={`${styles.statValue} ${styles.tierB}`}>{tierBCounts}</span> Tier B
+            </span>
+            <span className={styles.statDivider}>|</span>
+            <span className={styles.statItem}>
+              <span className={styles.statValue}>{totalPrinters}</span> printers
             </span>
           </div>
         </div>
+
         <div className={styles.headerActions}>
           <button
             className={styles.actionBtn}
             onClick={handleSelectAll}
             disabled={filteredSites.length === 0}
           >
-            Select All Visible
+            Select All ({filteredSites.length})
           </button>
           <button
             className={styles.actionBtn}
             onClick={handleClearSelection}
             disabled={selectedIds.size === 0}
           >
-            Clear Selection
+            Clear ({selectedIds.size})
+          </button>
+          <button
+            className={styles.actionBtn}
+            onClick={handleOpenOnboardingModal}
+            disabled={selectedIds.size === 0 || isOnboarding}
+          >
+            Onboard Selected
           </button>
         </div>
       </header>
 
-      {/* Main content */}
+      {/* Main content - 3-column grid */}
       <div className={styles.content}>
-        {/* Left sidebar - Filters & Legend */}
+        {/* Left sidebar - Filters + Legend */}
         <aside className={styles.sidebarLeft}>
           <MapFilters
             filters={filters}
@@ -480,85 +521,55 @@ export function GlobalMap() {
           <MapLegend />
         </aside>
 
-        {/* Map viewport */}
-        <main className={styles.viewport} ref={containerRef}>
-          <svg
-            ref={svgRef}
-            className={styles.svg}
-            width={dimensions.width}
-            height={dimensions.height}
-          />
-
-          {/* Zoom controls */}
-          <div className={styles.zoomControls}>
-            <button
-              onClick={() => {
-                if (!svgRef.current) return
-                const svg = d3.select(svgRef.current)
-                svg.transition().duration(300).call(
-                  (d3.zoom() as any).scaleBy,
-                  1.5
-                )
-              }}
-            >
-              +
-            </button>
-            <button
-              onClick={() => {
-                if (!svgRef.current) return
-                const svg = d3.select(svgRef.current)
-                svg.transition().duration(300).call(
-                  (d3.zoom() as any).scaleBy,
-                  0.67
-                )
-              }}
-            >
-              -
-            </button>
-            <button
-              onClick={() => {
-                if (!svgRef.current) return
-                const svg = d3.select(svgRef.current)
-                svg.transition().duration(300).call(
-                  (d3.zoom() as any).transform,
-                  d3.zoomIdentity
-                )
-              }}
-            >
-              ⌂
-            </button>
-          </div>
-
-          {/* Grid overlay */}
+        {/* Center - Map viewport */}
+        <div className={styles.viewport} ref={containerRef}>
+          <svg ref={svgRef} className={styles.svg} />
           <div className={styles.gridOverlay} />
-        </main>
 
-        {/* Right sidebar - Detail & Selection */}
-        <aside className={styles.sidebarRight}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={hoveredSite?.id ?? 'empty'}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.15 }}
+          {/* Hovered site tooltip */}
+          {hoveredSite && (
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '16px',
+                left: '16px',
+                padding: '8px 12px',
+                background: 'var(--god-steel-800)',
+                border: '1px solid var(--god-steel-600)',
+                color: 'var(--god-steel-200)',
+                fontSize: '12px',
+                pointerEvents: 'none',
+                zIndex: 10,
+              }}
             >
-              <SiteDetailPanel
-                site={hoveredSite}
-                isSelected={hoveredSite ? selectedIds.has(hoveredSite.id) : false}
-                onSelect={() => hoveredSite && handleSiteSelect(hoveredSite.id)}
-                onDeselect={() => hoveredSite && handleRemoveFromSelection(hoveredSite.id)}
-              />
-            </motion.div>
-          </AnimatePresence>
+              <strong>{hoveredSite.name}</strong>
+              <span style={{ marginLeft: '8px', color: 'var(--god-steel-400)' }}>
+                {hoveredSite.city}, {hoveredSite.state}
+              </span>
+              <span style={{ marginLeft: '8px', color: TIER_COLORS[hoveredSite.priorityTier] }}>
+                Tier {hoveredSite.priorityTier}
+              </span>
+              <span style={{ marginLeft: '8px' }}>
+                {hoveredSite.installations} printer{hoveredSite.installations !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
+        </div>
 
+        {/* Right sidebar - Site details + Selection queue */}
+        <aside className={styles.sidebarRight}>
+          <SiteDetailPanel
+            site={selectedSites.length === 1 ? selectedSites[0] : null}
+            isSelected={selectedSites.length === 1}
+            onSelect={() => {}}
+            onDeselect={handleClearSelection}
+          />
           <SelectionQueue
             selectedSites={selectedSites}
             onRemoveSite={handleRemoveFromSelection}
             onClearAll={handleClearSelection}
             onOnboardSelected={handleOpenOnboardingModal}
             isOnboarding={isOnboarding}
-            onViewProgress={() => setShowOnboardingProgress(true)}
           />
         </aside>
       </div>
@@ -574,29 +585,8 @@ export function GlobalMap() {
 
       {/* Onboarding Progress */}
       <OnboardingProgress
-        isOpen={showOnboardingProgress}
-        sites={Array.from(statusBySite.values()).map((status) => {
-          // Find the original site data
-          const site = sites.find((s) => s.id === status.siteId)
-          return site || {
-            id: status.siteId,
-            name: status.siteName || status.siteId,
-            street: '',
-            city: '',
-            state: '',
-            zip: '',
-            country: 'US',
-            installations: status.printers.length,
-            productLines: '',
-            priorityTier: 'C' as const,
-            priorityScore: 0,
-            contactName: null,
-            contactEmail: null,
-            hasShop: false,
-            hasStudio: false,
-            hasInnX: false,
-          }
-        })}
+        isOpen={showOnboardingProgress && !!batchSummary}
+        sites={sites}
         statusBySite={statusBySite}
         batchSummary={batchSummary}
         isConnected={isConnected}

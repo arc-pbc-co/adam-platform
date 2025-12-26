@@ -1,0 +1,303 @@
+/**
+ * LoginScreen styles - God Mode design system
+ */
+
+.container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-void);
+  padding: var(--space-4);
+}
+
+/* Background effects */
+.backgroundEffects {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.glowOrb1 {
+  position: absolute;
+  top: 25%;
+  left: 25%;
+  width: 400px;
+  height: 400px;
+  background: rgba(0, 212, 255, 0.08);
+  filter: blur(120px);
+  border-radius: 50%;
+}
+
+.glowOrb2 {
+  position: absolute;
+  bottom: 25%;
+  right: 25%;
+  width: 300px;
+  height: 300px;
+  background: rgba(170, 68, 255, 0.08);
+  filter: blur(100px);
+  border-radius: 50%;
+}
+
+.gridOverlay {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+      rgba(0, 212, 255, 0.03) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Form wrapper */
+.formWrapper {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Back button */
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  position: absolute;
+  top: -48px;
+  left: 0;
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.backButton:hover {
+  color: var(--accent-primary);
+  border-color: var(--border-subtle);
+}
+
+/* Card */
+.card {
+  --aug-tl: 16px;
+  --aug-br: 16px;
+  --aug-border-all: 1px;
+  --aug-border-bg: var(--border-subtle);
+  background: var(--bg-secondary);
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: var(--space-8) var(--space-6);
+  text-align: center;
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(
+    180deg,
+    var(--bg-tertiary) 0%,
+    var(--bg-secondary) 100%
+  );
+}
+
+.logoIcon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: 50%;
+  color: var(--accent-primary);
+  box-shadow: var(--glow-primary-soft);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+}
+
+.subtitle {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+/* Form */
+.form {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: rgba(255, 51, 102, 0.1);
+  border: 1px solid rgba(255, 51, 102, 0.3);
+  color: var(--accent-danger);
+  font-size: var(--text-sm);
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-tertiary);
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  padding: var(--space-3) var(--space-3) var(--space-3) 40px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: var(--glow-primary-soft);
+}
+
+/* Submit button */
+.submitButton {
+  --aug-tl: 6px;
+  --aug-br: 6px;
+  --aug-border-all: 1px;
+  --aug-border-bg: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-4);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 212, 255, 0.2) 0%,
+    rgba(0, 212, 255, 0.1) 100%
+  );
+  color: var(--accent-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wider);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.submitButton:hover:not(:disabled) {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 212, 255, 0.3) 0%,
+    rgba(0, 212, 255, 0.2) 100%
+  );
+  box-shadow: var(--glow-primary);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 212, 255, 0.3);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Card footer */
+.cardFooter {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-primary);
+}
+
+.demoHint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.demoLabel {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-muted);
+}
+
+.demoCode {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  background: var(--bg-tertiary);
+  padding: var(--space-1) var(--space-3);
+}
+
+/* Version info */
+.versionInfo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.divider {
+  color: var(--border-subtle);
+}

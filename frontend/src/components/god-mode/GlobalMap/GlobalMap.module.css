@@ -3,10 +3,12 @@
  */
 
 .container {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
   background: var(--god-steel-950);
+  overflow: hidden;
 }
 
 /* Header */
@@ -97,24 +99,65 @@
   cursor: not-allowed;
 }
 
-/* Content layout */
+/* Content layout - CSS Grid for reliable 3-column */
 .content {
   display: grid;
-  grid-template-columns: 220px 1fr 260px;
-  gap: var(--space-2);
+  grid-template-columns: 160px minmax(0, 1fr) 200px;
   flex: 1;
   padding: var(--space-2);
+  gap: var(--space-2);
   min-height: 0;
+  overflow: hidden;
 }
 
 /* Sidebars */
-.sidebarLeft,
+.sidebarLeft {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  border: 1px solid var(--god-steel-600);
+  background: var(--god-steel-850);
+  padding: var(--space-2);
+}
+
 .sidebarRight {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   overflow-y: auto;
+  overflow-x: hidden;
   min-height: 0;
+  border: 1px solid var(--god-steel-600);
+  background: var(--god-steel-850);
+  padding: var(--space-2);
+}
+
+@media (max-width: 900px) {
+  .content {
+    grid-template-columns: 140px 1fr 180px;
+  }
+}
+
+@media (max-width: 700px) {
+  .content {
+    grid-template-columns: 1fr 180px;
+  }
+  .sidebarLeft {
+    display: none;
+  }
+}
+
+@media (max-width: 500px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+  .sidebarLeft,
+  .sidebarRight {
+    display: none;
+  }
 }
 
 /* Map viewport */
@@ -123,10 +166,14 @@
   background: var(--god-steel-900);
   border: var(--border-thin) solid var(--god-steel-700);
   overflow: hidden;
+  min-width: 0;
+  min-height: 0;
 }
 
 .svg {
   display: block;
+  width: 100%;
+  height: 100%;
   background: radial-gradient(
     ellipse at center,
     var(--god-steel-850) 0%,

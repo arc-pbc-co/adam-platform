@@ -10,7 +10,8 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+// Motion temporarily disabled - will re-enable for panel animations
+// import { motion, AnimatePresence } from 'framer-motion'
 import {
   Globe,
   Target,
@@ -18,20 +19,20 @@ import {
   Settings,
   Wifi,
   WifiOff,
+  LogOut,
+  ArrowLeft,
 } from 'lucide-react'
 import { AdamResourceBar, DEFAULT_ADAM_RESOURCES } from './ResourceBar'
 import { EventLog } from './EventLog'
 import { GlobalMap } from './GlobalMap'
-import { TacticalMap } from './TacticalMap'
-import { TacticalCommandPanel } from './TacticalCommandPanel'
-import { PrinterSelectionPanel } from './PrinterSelectionPanel'
-import { Minimap } from './Minimap/Minimap'
+import { TacticalView } from './TacticalView'
 import { ShortcutsHelpModal } from './ShortcutsHelpModal'
 import { ScanLineOverlay } from './shared/ScanLineOverlay'
 import { useWebSocketContext } from '../../contexts/WebSocketContext'
 import { useEventLog } from '../../hooks/useEventLog'
-import { useControlGroups } from '../../hooks/useControlGroups'
-import type { PrinterUnit, PrinterCommand } from './TacticalMap/types'
+// Control groups hook - will be re-enabled for tactical view
+// import { useControlGroups } from '../../hooks/useControlGroups'
+import type { PrinterUnit } from './TacticalMap/types'
 import styles from './GodModeDashboard.module.css'
 
 // View modes
@@ -76,13 +77,25 @@ function savePreferences(prefs: UserPreferences): void {
   }
 }
 
-export function GodModeDashboard() {
+// Import Site type from GlobalMap
+import type { Site } from './GlobalMap/types'
+
+interface GodModeDashboardProps {
+  onOnboardComplete?: (sites: Site[]) => void
+  onBack?: () => void
+  onLogout?: () => void
+}
+
+export function GodModeDashboard({
+  onOnboardComplete,
+  onBack,
+  onLogout,
+}: GodModeDashboardProps = {}) {
   // User preferences
   const [preferences, setPreferences] = useState<UserPreferences>(loadPreferences)
 
   // UI state
   const [showShortcutsModal, setShowShortcutsModal] = useState(false)
-  const [selectedPrinterIds, setSelectedPrinterIds] = useState<Set<string>>(new Set())
 
   // WebSocket connection
   let wsContext: ReturnType<typeof useWebSocketContext> | null = null
@@ -96,16 +109,12 @@ export function GodModeDashboard() {
   // Event log - using entries from hook
   const { entries: eventEntries } = useEventLog({ maxEvents: 100 })
 
-  // Control groups for tactical map
-  const {
-    assignGroup,
-    selectGroup,
-  } = useControlGroups({
-    onGroupSelected: (_groupNumber, agentIds) => {
-      // Update selection when group is selected
-      setSelectedPrinterIds(new Set(agentIds))
-    },
-  })
+  // Control groups for tactical map (currently unused, will be enabled with tactical view)
+  // const { assignGroup, selectGroup } = useControlGroups({
+  //   onGroupSelected: (_groupNumber, agentIds) => {
+  //     // Update selection when group is selected
+  //   },
+  // })
 
   // Save preferences when they change
   useEffect(() => {
@@ -241,12 +250,6 @@ export function GodModeDashboard() {
     []
   )
 
-  // Get selected printers as array
-  const selectedPrinters = useMemo(
-    () => mockPrinters.filter((p) => selectedPrinterIds.has(p.id)),
-    [mockPrinters, selectedPrinterIds]
-  )
-
   // Resource data with mock values
   const resources = useMemo(() => {
     return DEFAULT_ADAM_RESOURCES.map((r) => ({
@@ -264,83 +267,46 @@ export function GodModeDashboard() {
     }))
   }, [mockPrinters])
 
-  // Handle single printer selection
-  const handlePrinterSelect = useCallback(
-    (id: string, additive?: boolean) => {
-      setSelectedPrinterIds((prev) => {
-        const next = new Set(additive ? prev : [])
-        if (prev.has(id) && additive) {
-          next.delete(id)
-        } else {
-          next.add(id)
-        }
-        return next
-      })
-    },
-    []
-  )
-
-  // Handle box selection
-  const handleSelectInRect = useCallback(
-    (
-      rect: { x: number; y: number; width: number; height: number },
-      items: PrinterUnit[],
-      additive?: boolean
-    ) => {
-      // Find items within rect
-      const inRect = items.filter((item) => {
-        return (
-          item.position.x >= rect.x &&
-          item.position.x <= rect.x + rect.width &&
-          item.position.y >= rect.y &&
-          item.position.y <= rect.y + rect.height
-        )
-      })
-
-      setSelectedPrinterIds((prev) => {
-        const next = new Set(additive ? prev : [])
-        inRect.forEach((item) => next.add(item.id))
-        return next
-      })
-    },
-    []
-  )
-
-  // Handle deselect all
-  const handleDeselectAll = useCallback(() => {
-    setSelectedPrinterIds(new Set())
-  }, [])
-
-  // Handle commands
-  const handleCommand = useCallback(
-    (command: PrinterCommand, printerIds: string[]) => {
-      console.log(`Executing ${command} on:`, printerIds)
-      // Add event log entry - would call addEvent from useEventLog
-    },
-    []
-  )
-
-  // Handle control group callbacks for keyboard shortcuts
-  const controlGroupCallbacks = useMemo(
-    () => ({
-      onSelectGroup: (groupNumber: number) => {
-        const agentIds = selectGroup(groupNumber)
-        setSelectedPrinterIds(new Set(agentIds))
-      },
-      onAssignGroup: (groupNumber: number) => {
-        assignGroup(groupNumber, Array.from(selectedPrinterIds))
-      },
-    }),
-    [selectGroup, assignGroup, selectedPrinterIds]
-  )
-
   return (
-    <div className={styles.dashboard}>
+    <div className="god-mode-view" style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      background: '#050810',
+      overflow: 'hidden'
+    }}>
       {/* Scan line overlay */}
       {preferences.showScanlines && <ScanLineOverlay />}
 
       {/* Header with Resource Bar and View Toggle */}
       <header className={styles.header}>
+        {/* Back/Logout buttons */}
+        {(onBack || onLogout) && (
+          <div className={styles.headerNav}>
+            {onBack && (
+              <button
+                className={styles.navButton}
+                onClick={onBack}
+                title="Back to Home"
+              >
+                <ArrowLeft size={16} />
+              </button>
+            )}
+            {onLogout && (
+              <button
+                className={styles.navButton}
+                onClick={onLogout}
+                title="Sign Out"
+              >
+                <LogOut size={16} />
+              </button>
+            )}
+          </div>
+        )}
         <AdamResourceBar resources={resources} />
 
         <div className={styles.viewToggle}>
@@ -397,101 +363,29 @@ export function GodModeDashboard() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className={styles.main}>
-        {/* Main Viewport with View Switching */}
-        <section className={styles.viewport}>
-          <AnimatePresence mode="wait">
-            {preferences.viewMode === 'global' ? (
-              <motion.div
-                key="global"
-                className={styles.viewContainer}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <GlobalMap />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="tactical"
-                className={styles.viewContainer}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <TacticalMap
-                  printers={mockPrinters}
-                  selectedIds={selectedPrinterIds}
-                  onSelect={handlePrinterSelect}
-                  onSelectInRect={handleSelectInRect}
-                  onDeselectAll={handleDeselectAll}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </section>
-
-        {/* Sidebar - Only shown in Tactical view */}
-        {preferences.viewMode === 'tactical' && (
-          <aside className={styles.sidebar}>
-            {/* Minimap */}
-            {preferences.showMinimap && (
-              <motion.div
-                className={styles.minimapContainer}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <Minimap
-                  printers={mockPrinters}
-                  selectedIds={selectedPrinterIds}
-                  viewportBounds={{ x: 0, y: 0, width: 100, height: 100 }}
-                  onNavigate={(pos) => console.log('Navigate to:', pos)}
-                />
-              </motion.div>
-            )}
-
-            {/* Selection Panel */}
-            <motion.div
-              className={styles.selectionContainer}
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-            >
-              <PrinterSelectionPanel
-                printers={selectedPrinters}
-                onCommand={handleCommand}
-              />
-            </motion.div>
-
-            {/* Command Panel */}
-            <motion.div
-              className={styles.commandContainer}
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <TacticalCommandPanel
-                selectedPrinters={selectedPrinters}
-                onCommand={handleCommand}
-                controlGroups={controlGroupCallbacks}
-                onDeselectAll={handleDeselectAll}
-              />
-            </motion.div>
-          </aside>
+      {/* Main Content - flex: 1 to fill remaining space */}
+      <main style={{
+        flex: 1,
+        position: 'relative',
+        overflow: 'hidden',
+        minHeight: 0
+      }}>
+        {preferences.viewMode === 'global' ? (
+          <GlobalMap onOnboardComplete={onOnboardComplete} />
+        ) : (
+          <TacticalView />
         )}
       </main>
 
-      {/* Event Log Footer */}
-      <footer className={styles.footer}>
-        <EventLog
-          entries={eventEntries}
-          maxEntries={preferences.eventLogExpanded ? 100 : 20}
-        />
-      </footer>
+      {/* Event Log Footer - only show for global view since TacticalView has its own */}
+      {preferences.viewMode === 'global' && (
+        <footer className={styles.footer}>
+          <EventLog
+            entries={eventEntries}
+            maxEntries={preferences.eventLogExpanded ? 100 : 20}
+          />
+        </footer>
+      )}
 
       {/* Shortcuts Help Modal */}
       <ShortcutsHelpModal

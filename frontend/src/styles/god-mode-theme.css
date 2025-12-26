@@ -225,9 +225,9 @@
      ------------------------------------------------------------------------- */
 
   --layout-resource-bar-height: 48px;
-  --layout-sidebar-width: 320px;
-  --layout-minimap-height: 200px;
-  --layout-command-panel-height: 180px;
+  --layout-sidebar-width: 280px;
+  --layout-minimap-height: 180px;
+  --layout-command-panel-height: 160px;
   --layout-event-log-height: 160px;
   --layout-gap: var(--space-2);
 }
@@ -246,6 +246,8 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  width: 100%;
+  min-height: 100%;
 }
 
 body {
@@ -254,7 +256,34 @@ body {
   line-height: var(--leading-normal);
   color: var(--god-steel-200);
   background: var(--god-steel-950);
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+
+/* Lock scroll for full-screen app views (God Mode, IDE) */
+html:has(.god-mode-view),
+html:has(.ide-view) {
   overflow: hidden;
+  height: 100%;
+}
+
+html:has(.god-mode-view) body,
+html:has(.ide-view) body {
+  overflow: hidden;
+  height: 100%;
+}
+
+html:has(.god-mode-view) #root,
+html:has(.ide-view) #root {
+  overflow: hidden;
+  height: 100%;
 }
 
 /* ============================================================================

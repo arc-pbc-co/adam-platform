@@ -1,0 +1,231 @@
+/**
+ * AgentNode styles - God Mode themed agent cards
+ */
+
+.node {
+  position: absolute;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  z-index: 10;
+}
+
+.node.selected {
+  z-index: 20;
+}
+
+.card {
+  width: 280px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all var(--transition-fast);
+}
+
+.card:hover {
+  border-color: var(--border-default);
+}
+
+.node.selected .card {
+  border-color: var(--agent-color, var(--accent-primary));
+  box-shadow: 0 0 20px color-mix(in srgb, var(--agent-color, var(--accent-primary)) 30%, transparent);
+}
+
+.card.running {
+  border-color: color-mix(in srgb, var(--agent-color, var(--accent-primary)) 50%, transparent);
+}
+
+/* Header */
+.header {
+  padding: var(--space-3) var(--space-4);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--agent-color, var(--accent-primary)) 15%, transparent) 0%,
+    transparent 100%
+  );
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.iconWrapper {
+  padding: var(--space-1);
+  background: color-mix(in srgb, var(--agent-color, var(--accent-primary)) 20%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--agent-color, var(--accent-primary));
+}
+
+.label {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.statusIcon {
+  color: var(--agent-color, var(--accent-primary));
+}
+
+.statusIcon.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.menuBtn {
+  padding: var(--space-1);
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.menuBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* Stats Row */
+.statsRow {
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.statLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+  margin-left: auto;
+}
+
+/* Details */
+.details {
+  padding: var(--space-3) var(--space-4);
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  padding: var(--space-1) 0;
+}
+
+.detailKey {
+  color: var(--text-tertiary);
+  text-transform: capitalize;
+}
+
+.detailValue {
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+.noDetails {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: var(--space-2) 0;
+}
+
+/* Footer */
+.footer {
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.footerStat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.statusBadge {
+  margin-left: auto;
+  padding: var(--space-1) var(--space-2);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  border-radius: var(--radius-sm);
+}
+
+.statusBadge.idle {
+  background: color-mix(in srgb, var(--text-tertiary) 20%, transparent);
+  color: var(--text-tertiary);
+}
+
+.statusBadge.running {
+  background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  color: var(--accent-primary);
+}
+
+.statusBadge.completed {
+  background: color-mix(in srgb, var(--accent-secondary) 20%, transparent);
+  color: var(--accent-secondary);
+}
+
+.statusBadge.failed {
+  background: color-mix(in srgb, var(--accent-danger) 20%, transparent);
+  color: var(--accent-danger);
+}
+
+.statusBadge.waiting {
+  background: color-mix(in srgb, var(--accent-warning) 20%, transparent);
+  color: var(--accent-warning);
+}
+
+/* Connection Points */
+.connectionPoint {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-default);
+  border-radius: 50%;
+}
+
+.connectionPoint.left {
+  left: -8px;
+}
+
+.connectionPoint.right {
+  right: -8px;
+}

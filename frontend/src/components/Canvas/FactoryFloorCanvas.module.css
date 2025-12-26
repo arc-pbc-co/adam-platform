@@ -1,0 +1,300 @@
+/**
+ * FactoryFloorCanvas styles - Hardware fleet visualization
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.toolbarGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.toolbarBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.toolbarBtn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.toolbarBtn.active {
+  background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.zoomLabel {
+  min-width: 48px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-subtle);
+}
+
+.fleetStats {
+  margin-left: auto;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.statBadge {
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-sm);
+}
+
+.statBadge[data-status="printing"] {
+  background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  color: var(--accent-primary);
+}
+
+.statBadge[data-status="sintering"] {
+  background: color-mix(in srgb, var(--accent-purple) 20%, transparent);
+  color: var(--accent-purple);
+}
+
+.statBadge[data-status="idle"] {
+  background: color-mix(in srgb, var(--text-tertiary) 20%, transparent);
+  color: var(--text-secondary);
+}
+
+.statBadge[data-status="error"] {
+  background: color-mix(in srgb, var(--accent-danger) 20%, transparent);
+  color: var(--accent-danger);
+}
+
+/* Canvas */
+.canvas {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+}
+
+.canvas.withGrid {
+  background-image:
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: -1px -1px;
+}
+
+.canvasContent {
+  position: relative;
+  min-width: 1200px;
+  min-height: 600px;
+  padding: var(--space-8);
+  transform-origin: 0 0;
+}
+
+/* Printer Card */
+.printerCard {
+  position: absolute;
+  width: 280px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.printerCard:hover {
+  border-color: var(--border-default);
+}
+
+.printerCard.selected {
+  border-color: var(--status-color, var(--accent-primary));
+  box-shadow: 0 0 20px color-mix(in srgb, var(--status-color, var(--accent-primary)) 30%, transparent);
+}
+
+.printerHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--status-color, var(--accent-primary)) 15%, transparent) 0%,
+    transparent 100%
+  );
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.printerIcon {
+  padding: var(--space-2);
+  background: color-mix(in srgb, var(--status-color, var(--accent-primary)) 20%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--status-color, var(--accent-primary));
+}
+
+.printerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.printerName {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.printerModel {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.statusIndicator {
+  margin-left: auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--status-color);
+}
+
+.statusIndicator.printing,
+.statusIndicator.sintering {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.statusIndicator.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent-danger) 20%, transparent);
+  color: var(--accent-danger);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Progress */
+.printerProgress {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.progressBar {
+  height: 6px;
+  background: var(--bg-primary);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: var(--space-2);
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--status-color, var(--accent-primary));
+  border-radius: 3px;
+  box-shadow: 0 0 8px var(--status-color, var(--accent-primary));
+}
+
+.progressStats {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+/* Stats */
+.printerStats {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+/* Current Job */
+.currentJob {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-subtle);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.currentJob svg {
+  color: var(--status-color, var(--accent-primary));
+}
+
+.errorText {
+  color: var(--accent-danger);
+}
+
+/* Status Bar */
+.statusBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.statusItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.statusItem svg {
+  color: var(--text-tertiary);
+}

@@ -14,6 +14,7 @@
  * - Experiments today (count toward daily target)
  */
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Cpu,
@@ -106,6 +107,16 @@ function defaultFormatter(current: number, max: number): string {
  * AdamResourceBar - New ADAM-specific resource bar with progress gauges
  */
 export function AdamResourceBar({ resources }: AdamResourceBarProps) {
+  // Proper clock state with interval - prevents jitter from inline Date rendering
+  const [currentTime, setCurrentTime] = useState(() => new Date())
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <div
       className={styles.bar}
@@ -151,7 +162,7 @@ export function AdamResourceBar({ resources }: AdamResourceBarProps) {
         <div className={styles.timeSection}>
           <Clock size={14} className={styles.clockIcon} />
           <span className={styles.time}>
-            {new Date().toLocaleTimeString('en-US', {
+            {currentTime.toLocaleTimeString('en-US', {
               hour12: false,
               hour: '2-digit',
               minute: '2-digit',

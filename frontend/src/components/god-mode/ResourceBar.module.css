@@ -24,6 +24,10 @@
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  /* Allow shrinking when in flex container */
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 /* Logo Section */
@@ -65,6 +69,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-6);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .divider {
@@ -146,7 +153,8 @@
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-sm);
   transition: all var(--transition-fast);
-  min-width: 100px;
+  min-width: 80px;
+  flex-shrink: 1;
 }
 
 .gauge:hover {
@@ -270,4 +278,8 @@
   font-weight: 500;
   color: var(--text-secondary);
   letter-spacing: var(--tracking-wide);
+  /* Use tabular figures so all digits have equal width - prevents jitter */
+  font-variant-numeric: tabular-nums;
+  min-width: 70px;
+  text-align: right;
 }
