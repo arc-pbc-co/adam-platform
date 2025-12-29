@@ -347,7 +347,7 @@ Or type **help** for more commands.`,
           </button>
           <div className={styles.divider} />
           <div className={styles.logo}>
-            <img src="/arc-logo.jpg" alt="Arc" className={styles.logoImage} />
+            <img src="/arc-logo.png" alt="Arc" className={styles.logoImage} />
             <span>ADAM Platform</span>
           </div>
           <div className={styles.divider} />
@@ -645,7 +645,7 @@ Or type **help** for more commands.`,
             {canvasView === 'agents' ? (
               <FlowchartCanvas experimentId={selectedExperiment.id} />
             ) : (
-              <FactoryFloorCanvas />
+              <FactoryFloorCanvas sites={sites} />
             )}
           </div>
 

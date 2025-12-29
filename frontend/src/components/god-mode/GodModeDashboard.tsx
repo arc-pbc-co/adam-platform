@@ -79,73 +79,9 @@ function savePreferences(prefs: UserPreferences): void {
 
 // Import Site type from GlobalMap
 import type { Site } from './GlobalMap/types'
-import type { PrinterStatus } from './TacticalMap/types'
 
-// Convert product line to printer model
-function productLineToModel(productLine: string): PrinterUnit['model'] {
-  switch (productLine) {
-    case 'Shop':
-      return 'Shop System'
-    case 'Studio':
-      return 'Studio System'
-    case 'InnX':
-      return 'InnoventX'
-    default:
-      return 'Studio System'
-  }
-}
-
-// Get random simulated status
-function getSimulatedStatus(): PrinterStatus {
-  const statuses: PrinterStatus[] = ['idle', 'working', 'idle', 'working', 'calibrating', 'offline', 'error']
-  return statuses[Math.floor(Math.random() * statuses.length)]
-}
-
-// Convert sites to PrinterUnits for TacticalView
-function sitesToPrinterUnits(sites: Site[]): PrinterUnit[] {
-  const printers: PrinterUnit[] = []
-
-  sites.forEach((site) => {
-    if (!site.printers) return
-
-    site.printers.forEach((printer) => {
-      const status = getSimulatedStatus()
-      const isWorking = status === 'working'
-
-      printers.push({
-        id: printer.serialNumber,
-        name: `${printer.productLine} ${printer.serialNumber}`,
-        model: productLineToModel(printer.productLine),
-        status,
-        position: {
-          // Position will be calculated by TacticalMap based on site grouping
-          x: 0,
-          y: 0
-        },
-        labId: site.id,
-        labName: site.name,
-        jobProgress: isWorking ? Math.floor(Math.random() * 100) : null,
-        jobName: isWorking ? 'Active Job' : null,
-        health: {
-          temperature: status === 'offline' ? 0 : 150 + Math.floor(Math.random() * 100),
-          humidity: status === 'offline' ? 0 : 40 + Math.floor(Math.random() * 20),
-          uptime: Math.floor(Math.random() * 2000),
-          errorCount: status === 'error' ? Math.floor(Math.random() * 5) + 1 : 0,
-        },
-        capabilities: {
-          canPrint: status !== 'offline' && status !== 'error',
-          canQueue: status !== 'offline',
-          canCalibrate: status !== 'offline',
-        },
-        lastPing: status === 'offline'
-          ? new Date(Date.now() - 3600000)
-          : new Date(),
-      })
-    })
-  })
-
-  return printers
-}
+// Import shared printer utilities
+import { sitesToPrinterUnits } from '../../utils/printerUtils'
 
 interface GodModeDashboardProps {
   onOnboardComplete?: (sites: Site[]) => void

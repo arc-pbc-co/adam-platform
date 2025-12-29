@@ -1,13 +1,15 @@
 /**
  * FactoryFloorCanvas - Hardware fleet visualization
+ *
+ * Displays printers from onboarded sites with filtering and real-time updates.
+ * Falls back to demo data when no sites are provided.
  */
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import {
   Thermometer,
   AlertTriangle,
-  Clock,
   RotateCcw,
   ZoomIn,
   ZoomOut,
@@ -19,27 +21,24 @@ import {
   Timer,
   Droplets,
   Package,
+  ChevronDown,
+  MapPin,
 } from 'lucide-react'
 import styles from './FactoryFloorCanvas.module.css'
+import type { Site } from '../god-mode/GlobalMap/types'
+import {
+  sitesToCanvasPrinters,
+  calculateGridPositions,
+  getUniqueSites,
+  filterPrintersBySite,
+  type CanvasPrinterUnit,
+} from '../../utils/printerUtils'
 
-interface PrinterUnit {
-  id: string
-  name: string
-  model: string
-  status: 'printing' | 'idle' | 'maintenance' | 'error' | 'sintering'
-  progress?: number
-  temperature?: number
-  currentJob?: string
-  position: { x: number; y: number }
-  telemetry?: {
-    jobProgress: number
-    layersPrinted: number
-    totalLayers: number
-    timeRemaining: string
-  }
-}
+// Re-export for backward compatibility
+type PrinterUnit = CanvasPrinterUnit
 
 interface FactoryFloorCanvasProps {
+  sites?: Site[]
   onPrinterSelect?: (printer: PrinterUnit | null) => void
 }
 
@@ -120,11 +119,37 @@ const createDemoPrinters = (): PrinterUnit[] => [
   },
 ]
 
-export function FactoryFloorCanvas({ onPrinterSelect }: FactoryFloorCanvasProps) {
-  const [printers, setPrinters] = useState<PrinterUnit[]>(createDemoPrinters)
+export function FactoryFloorCanvas({ sites, onPrinterSelect }: FactoryFloorCanvasProps) {
   const [selectedPrinter, setSelectedPrinter] = useState<string | null>(null)
+  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null)
   const [zoom, setZoom] = useState(1)
   const [showGrid, setShowGrid] = useState(true)
+  const [siteDropdownOpen, setSiteDropdownOpen] = useState(false)
+
+  // Convert sites to printers or use demo data
+  const basePrinters = useMemo(() => {
+    if (sites && sites.length > 0) {
+      return sitesToCanvasPrinters(sites)
+    }
+    return createDemoPrinters()
+  }, [sites])
+
+  // Get unique sites for the dropdown
+  const availableSites = useMemo(() => getUniqueSites(basePrinters), [basePrinters])
+
+  // Filter printers by selected site and calculate grid positions
+  const positionedPrinters = useMemo(() => {
+    const filtered = filterPrintersBySite(basePrinters, selectedSiteId)
+    return calculateGridPositions(filtered)
+  }, [basePrinters, selectedSiteId])
+
+  // State for real-time progress updates
+  const [printers, setPrinters] = useState<PrinterUnit[]>(positionedPrinters)
+
+  // Update printers when positionedPrinters changes (site filter or sites prop changes)
+  useEffect(() => {
+    setPrinters(positionedPrinters)
+  }, [positionedPrinters])
 
   // Simulate progress updates
   useEffect(() => {
@@ -187,10 +212,59 @@ export function FactoryFloorCanvas({ onPrinterSelect }: FactoryFloorCanvasProps)
     error: printers.filter((p) => p.status === 'error' || p.status === 'maintenance').length,
   }
 
+  // Get selected site name for display
+  const selectedSiteName = selectedSiteId
+    ? availableSites.find((s) => s.id === selectedSiteId)?.name || 'Unknown'
+    : 'All Sites'
+
   return (
     <div className={styles.container}>
       {/* Toolbar */}
       <div className={styles.toolbar}>
+        {/* Site selector - only show when sites are provided */}
+        {sites && sites.length > 0 && (
+          <>
+            <div className={styles.toolbarGroup}>
+              <div className={styles.siteSelector}>
+                <button
+                  className={styles.siteSelectorBtn}
+                  onClick={() => setSiteDropdownOpen(!siteDropdownOpen)}
+                >
+                  <MapPin size={14} />
+                  <span>{selectedSiteName}</span>
+                  <ChevronDown size={14} className={siteDropdownOpen ? styles.rotated : ''} />
+                </button>
+                {siteDropdownOpen && (
+                  <div className={styles.siteDropdown}>
+                    <button
+                      className={`${styles.siteOption} ${!selectedSiteId ? styles.selected : ''}`}
+                      onClick={() => {
+                        setSelectedSiteId(null)
+                        setSiteDropdownOpen(false)
+                      }}
+                    >
+                      All Sites ({basePrinters.length} printers)
+                    </button>
+                    {availableSites.map((site) => (
+                      <button
+                        key={site.id}
+                        className={`${styles.siteOption} ${selectedSiteId === site.id ? styles.selected : ''}`}
+                        onClick={() => {
+                          setSelectedSiteId(site.id)
+                          setSiteDropdownOpen(false)
+                        }}
+                      >
+                        {site.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className={styles.divider} />
+          </>
+        )}
+
         <div className={styles.toolbarGroup}>
           <button className={styles.toolbarBtn} onClick={handleReset}>
             <RotateCcw size={16} />

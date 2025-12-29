@@ -80,7 +80,7 @@ interface WebSocketProviderProps {
  */
 export function WebSocketProvider({
   children,
-  url = '/api/ws',
+  url = '/ws',
   autoReconnect = true,
   initialReconnectDelay = 1000,
   maxReconnectDelay = 30000,
