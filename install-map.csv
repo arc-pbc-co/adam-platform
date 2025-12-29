@@ -1,0 +1,308 @@
+Include On Map,Priority Tier,Priority Score,Site Name,Street,City,ST,Zip,Country,Full Address,Installations,Product Lines,Latitude,Longitude,Contact Name,Contact Email
+TRUE,C,15,ABCorp NA Inc.,225 Rivermoor,Boston,MA,2132,US,"225 Rivermoor, Boston, MA 02132, US",1,Shop,,,Neil Glazebrook,neil.glazebrook@abcorp.com
+TRUE,A,60,"ADDTAC, Inc.",2940 E. La Cresta Avenue,Anaheim,CA,92806,US,"2940 E. La Cresta Avenue, Anaheim, CA 92806, US",3,"Shop, Studio",,,Ted Gih,teddy@addtac.com
+TRUE,B,35,AmPd Labs Inc. - Central Parkway,1718a West 23rd Street,Houston,TX,77008,US,"1718a West 23rd Street, Houston, TX 77008, US",3,Shop,,,Tim Neal,tim@ampdlabs.com
+TRUE,B,25,"Anduril Industries, Inc.","2722 Michelson Drive
+",Irvine,CA,92612,US,"2722 Michelson Drive
+, Irvine, CA 92612, US",2,Shop,,,Michelle Diaz,mdiaz@anduril.com
+TRUE,C,15,Apple - Sunnyvale,One Apple Park Way,Cupertino,CA,95014,US,"One Apple Park Way, Cupertino, CA 95014, US",1,Shop,,,Jeff Harmon,jeffrey_harmon@apple.com
+TRUE,A,60,Auburn University,182 South College Street,Auburn,AL,36849,US,"182 South College Street, Auburn, AL 36849, US",3,"Shop, Studio",,,Lewis Payton,paytoln@auburn.edu
+TRUE,A,50,AZOTH 3D Main Warehouse,1255 Beach Court,Saline,MI,48176,US,"1255 Beach Court, Saline, MI 48176, US",2,"Shop, Studio",,,Ronnie Sherrer,rsherrer@azoth3d.com
+TRUE,B,25,Beehive Ind-Loveland,422 Wards Corner Road,Loveland,OH,45140,US,"422 Wards Corner Road, Loveland, OH 45140, US",2,Shop,,,Victor Fulton,Victor.Fulton@beehiveind.com
+TRUE,A,90,BG Precision,319 South First Street,Temple,TX,76504,US,"319 South First Street, Temple, TX 76504, US",6,"Shop, Studio",,,Tanner Shipman,tanner@bgprecisionmachine.com
+TRUE,C,15,"Bloom Energy Corporation Sunnvale, CA",401 Whitney Pl,Fremont,CA,94539,US,"401 Whitney Pl, Fremont, CA 94539, US",1,Shop,,,Adam Byrd,adam.byrd@bloomenergy.com
+TRUE,C,15,Challenge Tool & Manufacturing,"11725 Lincoln Hwy E
+",New Haven,IN,46774,US,"11725 Lincoln Hwy E
+, New Haven, IN 46774, US",1,Shop,,,Adam Hull,adam.hull@ctm-inc.com
+TRUE,A,190,CLARAPATH,3434 US-22 West Suite 130,Branchburg,NJ,8876,US,"3434 US-22 West Suite 130, Branchburg, NJ 8876, US",16,"Shop, Studio",,,Robert Chen,rchen@clarapath.com
+TRUE,C,15,Daycraft Weapon Systems,1497 E Baseline Rd STE 100,Gilbert,AZ,85042,US,"1497 E Baseline Rd STE 100, Gilbert, AZ 85042, US",1,Shop,,,Dan McCabe,d.mccabe@daycraftsystems.com
+TRUE,A,70,"Freeform Technologies, LLC",127 Industry Boulevard,Irwin,PA,15642,US,"127 Industry Boulevard, Irwin, PA 15642, US",3,"Shop, InnX",,,Nathan Higgins,nhiggins@freeformtech.com
+TRUE,A,65,"Freeform Technologies, LLC",180 Environmental Drive,Saint Marys,PA,15857,US,"180 Environmental Drive, Saint Marys, PA 15857, US",6,Shop,,,Nathan Higgins,nhiggins@freeformtech.com
+TRUE,A,50,Impac Systems,1311 Broadway Street,Alexandria,MN,56308,US,"1311 Broadway Street, Alexandria, MN 56308, US",2,"Shop, Studio",,,Zach Kelley,zach.kelley@impacsystems.com
+TRUE,A,60,"Indo-MIM Inc., USA","3902, SW 36th Street, Suite #101",San Antonio,TX,78226,US,"3902, SW 36th Street, Suite #101, San Antonio, TX 78226, US",3,"Shop, Studio",,,Mukund Nagaraj,mukund.n@indo-mim.com
+TRUE,A,70,Lancer Worldwide,63 Third Avenue,Burlington,MA,1803,US,"63 Third Avenue, Burlington, MA 01803, US",4,"Shop, Studio",,,Mukund Nagaraj,mukund.n@indo-mim.com
+TRUE,C,15,Le Claire Manufacturing Co,2707 62nd Street Court,Bettendorf,IA,52722,US,"2707 62nd Street Court, Bettendorf, IA 52722, US",1,Shop,,,Joseph Martinez,joseph.martinez@leclairemfg.com
+TRUE,A,50,Milwaukee Tool,13135 West Lisbon Road,Brookefield,WI,53005,US,"13135 West Lisbon Road, Brookefield, WI 53005, US",2,"Shop, Studio",,,"Horn, Mitchell",mitchell.horn@milwaukeetool.com
+TRUE,C,15,MK Machine,208 Elizabeth Street,Hallsville,MO,65255,US,"208 Elizabeth Street, Hallsville, MO 65255, US",1,Shop,,,Tyler Kemp,tyler.kemp@mkmachining.com
+TRUE,C,15,Moyna Holdings (C.J. Moyna & Sons),"24412 Hwy 13
+",Elkader,IA,52043,US,"24412 Hwy 13
+, Elkader, IA 52043, US",1,Shop,,,Ryan Young,ryoung@cjmoyna.com
+TRUE,A,60,Naval Surface Warfare Center,P.O. Box 998022,Cleveland,OH,44199-8022,US,"P.O. Box 998022, Cleveland, OH 44199-8022, US",3,"Shop, Studio",,,,
+TRUE,C,15,Nissan,5737 Vinton NW,Comstock Park,MI,49321,US,"5737 Vinton NW, Comstock Park, MI 49321, US",1,Shop,,,"Zakoff, John",zakoffj@nrd.nissan-usa.com
+TRUE,C,15,North American Lighting,27 Briscoe Drive,Flora,IL,62839,US,"27 Briscoe Drive, Flora, IL 62839, US",1,Shop,,,Jonathan Piperakis,jonathan_piperakis@nal.com
+TRUE,A,270,North Carolina State University - Raleigh,2076 Valleydale Terr,Birmingham,AL,35244,US,"2076 Valleydale Terr, Birmingham, AL 35244, US",24,"Shop, Studio",,,Zak Olech,zolech@ncsu.edu
+TRUE,C,15,"Optisys, Inc.",250 W 3900 S UNIT 1 Building A,Salt Lake City,UT,84107,US,"250 W 3900 S UNIT 1 Building A, Salt Lake City, UT 84107, US",1,Shop,,,Robert Smith,robert.smith@optisys.com
+TRUE,A,70,Patriot Ordnance Factory,1400 Pioneer Street,Brea,CA,92821,US,"1400 Pioneer Street, Brea, CA 92821, US",4,"Shop, Studio",,,POF-USA Engineering,engineering@pof-usa.com
+TRUE,A,70,Phoenix DeVentures,207 East Ohio Street,Chicago,IL,60611,US,"207 East Ohio Street, Chicago, IL 60611, US",4,"Shop, Studio",,,Jordan Carter,jordanc@phoenixdeventures.com
+TRUE,C,15,"PrinterPrezz, Inc.",4026 Clipper Court,Fremont,CA,94538,US,"4026 Clipper Court, Fremont, CA 94538, US",1,Shop,,,Dylan Tepper,dylan.tepper@z8a.com
+TRUE,C,15,Q LLC,110 Venture Dr,Dover,NH,3820,US,"110 Venture Dr, Dover, NH 03820, US",1,Shop,,,Prinzton Florez,p.flores@liveqordie.com
+TRUE,A,130,Savage Arms Inc,910 Day Hill Road,Windsor,CT,6095,US,"910 Day Hill Road, Windsor, CT 06095, US",10,"Shop, Studio",,,Leo Maric,lmaric@savagearms.com
+TRUE,C,15,Schlumberger,"5599 San Felipe Street
+",Houston,TX,77056,US,"5599 San Felipe Street
+, Houston, TX 77056, US",1,Shop,,,Abbigail Ullrich,aullrich2@slb.com
+TRUE,A,120,Scojet,4991 Lake Brook Drive ## 300,Glen Allen,VA,23060,US,"4991 Lake Brook Drive ## 300, Glen Allen, VA 23060, US",9,"Shop, Studio",,,Gary Trzcianka,gtrzcianka@scojet.com
+TRUE,C,15,"Shippensburg Pump Co., Inc.",Valley Heating & Cooling Building,Shippensburg,PA,17257,US,"Valley Heating & Cooling Building, Shippensburg, PA 17257, US",1,Shop,,,Noah Scott,nscott@shipcopumps.com
+TRUE,A,100,SolidCAM Inc.,"207 Pheasant Run
+",Newtown,PA,18940,US,"207 Pheasant Run
+, Newtown, PA 18940, US",7,"Shop, Studio",,,Emil Somekh,emil.somekh@solidcam.com
+TRUE,A,50,"Think Variant, Inc",15B County Rte 59,Phoenix,NY,13135,US,"15B County Rte 59, Phoenix, NY 13135, US",2,"Shop, Studio",,,Scott Antonacci,santonacci@rndcollc.com
+TRUE,C,20,3M - Safety Security & Protection,"255 Roselawn Ave E #45,",St Paul,MN,55117,US,"255 Roselawn Ave E #45,, St Paul, MN 55117, US",2,Studio,,,Fernando Caralt,kkimball.cw@mmm.com
+TRUE,C,10,"Advanced Geolocations Solutions, LLC","Accounts Payable Advanced Geolocation Solutions, LLC 21515 Ridgetop Circle, Ste 390",Sterling,VA,20166,US,"Accounts Payable Advanced Geolocation Solutions, LLC 21515 Ridgetop Circle, Ste 390, Sterling, VA 20166, US",1,Studio,,,Aref Fouladi,aref@advancedgeos.com
+TRUE,C,10,Aerocom Industries,"1921 Miller Drive
+",Longmont,CO,80501,US,"1921 Miller Drive
+, Longmont, CO 80501, US",1,Studio,,,Travis Lang,travisl@aerocomind.com
+TRUE,C,10,Aircraft Prototype Systems Division,"Comptroller, Internal Entitlements Team N64142 NAWCAD Bldg 440, Room 25 47122 Liljencrantz Road",Patuxent River,MD,20670-1549,US,"Comptroller, Internal Entitlements Team N64142 NAWCAD Bldg 440, Room 25 47122 Liljencrantz Road, Patuxent River, MD 20670-1549, US",1,Studio,,,"Hartwig, Chauncey F CIV USN NAWCAD",chauncey.f.hartwig.civ@us.navy.mil
+TRUE,B,40,Americana Outdoors,3200 Sheridan Road,Kenosha,WI,53140,US,"3200 Sheridan Road, Kenosha, WI 53140, US",4,Studio,,,,
+TRUE,C,10,Ametek Brookfield,11 Commerce Blvd,Middleboro,,2346,US,"11 Commerce Blvd, Middleboro,  02346, US",1,Studio,,,Kurt Wivagg,kurt.wivagg@ametek.com
+TRUE,C,10,Antelope Valley College,3041 West Avenue K,Lancaster,CA,93536,US,"3041 West Avenue K, Lancaster, CA 93536, US",1,Studio,,,Joshua A Maldonado,joshua.maldonado@avc.edu
+TRUE,C,10,Anvil International - Columbia Plant,"1411 Lancaster Ave.,
+",columbia,PA,17512,US,"1411 Lancaster Ave.,
+, columbia, PA 17512, US",1,Studio,,,Tim Ulsh,tulsh@asc-es.com
+TRUE,B,30,"Applied Machine Solutions, Inc. -Demo - Terminated VAR",20 Harmony Ct.,Jasper,GA,30143,US,"20 Harmony Ct., Jasper, GA 30143, US",3,Studio,,,,
+TRUE,C,10,Applied Materials VSE,P.O. Box 210067,Dallas,TX,75211,US,"P.O. Box 210067, Dallas, TX 75211, US",1,Studio,,,Craig Chaney,craig_chaney@amat.com
+TRUE,C,10,Arctos (c/o ARFL/RQTI),"1270 N Fairfield Road
+",Dayton,OH,435432,US,"1270 N Fairfield Road
+, Dayton, OH 435432, US",1,Studio,,,"WARNER, JUSTIN T CIV USAF AFMC AFRL/RQTI",justin.warner.13@us.af.mil
+TRUE,B,40,Argonne National Laboratory,2979 Triverton Pike Drive #200,Fitchburg,WI,53711,US,"2979 Triverton Pike Drive #200, Fitchburg, WI 53711, US",4,Studio,,,"Rusthoven, Brian M.",brianr@anl.gov
+TRUE,A,130,Ariel Corporation,"Attn:  Accounts Payable 165 N Arlington Hts Rd, Ste 101",Buffalo Grove,IL,60089,US,"Attn:  Accounts Payable 165 N Arlington Hts Rd, Ste 101, Buffalo Grove, IL 60089, US",13,Studio,,,Sam Wright,swright@arielcorp.com
+TRUE,C,10,ARKWIN INDUSTRIES Bethpage NY,686 Main Street,Westbury,NY,11590,US,"686 Main Street, Westbury, NY 11590, US",1,Studio,,,"Hugger, Alex",ahugger@arkwin.com
+TRUE,C,10,Autodesk,23 Drydock Avenue,Boston,MA,2210,US,"23 Drydock Avenue, Boston, MA 2210, US",1,Studio,,,Noa Kaplan,noa.kaplan@autodesk.com
+TRUE,C,10,Bayer Research and Development Services,Attn:  Accounts Payable,Hazelwood,MO,63042,US,"Attn:  Accounts Payable, Hazelwood, MO 63042, US",1,Studio,,,Brant Barber,brant.barber@bayer.com
+TRUE,C,10,"Beckatt Solutions, LLC - Demo - termindated Var",1750 Todd Farm Drive #c,Elgin,IL,60123,US,"1750 Todd Farm Drive #c, Elgin, IL 60123, US",1,Studio,,,,
+TRUE,C,10,Booz Allen Hamilton,8283 Greensboro Drive,McLean,VA,22102,US,"8283 Greensboro Drive, McLean, VA 22102, US",1,Studio,,,Jeff Wright,Wright_Jeffrey@bah.com
+TRUE,C,10,Boston Scientific,Brisas de Anasco Calle 8 E12,Anasco,PR,610,US,"Brisas de Anasco Calle 8 E12, Anasco, PR 00610, US",1,Studio,,,Linda Low,linda.low@bsci.com
+TRUE,C,10,Burke Aerospace (Turbine Technologies) - Studio - CT,126 Hyde Road,Farmington,CT,6032,US,"126 Hyde Road, Farmington, CT 06032, US",1,Studio,,,Jake Cabrila,jcabrila@burkeaerospace.com
+TRUE,C,10,CALLAWAY GOLF COMPANY,"2180 Rutherford Road
+",Carlsbad,CA,92008,US,"2180 Rutherford Road
+, Carlsbad, CA 92008, US",1,Studio,,,,
+TRUE,C,10,"CASTEM Technology Laboratories, Inc.","10171 Olga Lane, Suite F",Houston,TX,77041,US,"10171 Olga Lane, Suite F, Houston, TX 77041, US",1,Studio,,,Kazuki Okamoto,kazuki@castem.com
+TRUE,C,10,CDSA Dam Nech,"Commanding Officer 17632 Dahlgren Road, Suite 202",Dahlgren,VA,22448-5114,US,"Commanding Officer 17632 Dahlgren Road, Suite 202, Dahlgren, VA 22448-5114, US",1,Studio,,,,
+TRUE,B,40,Central Community College,1018 - 8th Street PMB 22,Boone,IA,50036,US,"1018 - 8th Street PMB 22, Boone, IA 50036, US",4,Studio,,,,
+TRUE,C,10,Chippewa Valley Technical College (CVTC),15150 25th Avenue North,Minneapolis,MN,55447,US,"15150 25th Avenue North, Minneapolis, MN 55447, US",1,Studio,,,,czimmerman30@student.cvtc.edu
+TRUE,C,10,"Christian Tse Designs & Manufacturing, Inc.",904 S Alta Vista Ave,Monrovia,CA,91016,US,"904 S Alta Vista Ave, Monrovia, CA 91016, US",1,Studio,,,,
+TRUE,C,10,Colorado School of Mines,"1500 Illinois St, Golden",Golden,CO,80401,US,"1500 Illinois St, Golden, Golden, CO 80401, US",1,Studio,,,,
+TRUE,C,10,CONNECTICUT TOOL & MFG. CO. LLC (DBA Pursuit Aerospace),"35 Corporate Avenue
+",Plainville,CT,6062,US,"35 Corporate Avenue
+, Plainville, CT 6062, US",1,Studio,,,Rose Russell,rrussell@pursuitaero.com
+TRUE,C,10,Copeland,1675 W Campbell Rd,Sidney,OH,45365,US,"1675 W Campbell Rd, Sidney, OH 45365, US",1,Studio,,,"Brenner, Shane P [COMRES/HVACR AMER/SID]",shane.brenner@copeland.com
+TRUE,C,10,COVIDIEN NORTH HAVEN,60 Middle Town Ave Mail Stop # 35,North Haven,CT,6473,US,"60 Middle Town Ave Mail Stop # 35, North Haven, CT 6473, US",1,Studio,,,"Clippinger, Aaron",aaron.clippinger@medtronic.com
+TRUE,C,10,Cummins,,Columbus,IN,47202,US,", Columbus, IN 47202, US",1,Studio,,,Carlos Rodriguez,c.rodriguez@cummins.com
+TRUE,A,60,Diman Regional Vocational High School,239 Western Ave,Essex,MA,1929,US,"239 Western Ave, Essex, MA 01929, US",6,Studio,,,,
+TRUE,C,10,Dynamic Machine of Detroit - Terminated VAR DO NOT USE,1653 E Maple Rd,Troy,MI,48083,US,"1653 E Maple Rd, Troy, MI 48083, US",1,Studio,,,,
+TRUE,B,40,East Stroudsburg University of PA,320 East 3rd Ave,Tarentum,PA,15084,US,"320 East 3rd Ave, Tarentum, PA 15084, US",4,Studio,,,,
+TRUE,C,10,"Eaton Corporation - Beltsville, MD",,Beltsville,MD,20704,US,", Beltsville, MD 20704, US",1,Studio,,,,dmitrijcarder@eaton.com
+TRUE,C,10,"Fast Radius, Inc.",113 N May St.,Chicago,IL,60607,US,"113 N May St., Chicago, IL 60607, US",1,Studio,,,,
+TRUE,C,20,FORD CONSTRUCTION BLDG & ENVIRONMTL,1 American Rd,Dearborn,MI,48126,US,"1 American Rd, Dearborn, MI 48126, US",2,Studio,,,,
+TRUE,C,20,Foothill College S&R,2065 Martin Avenue #103,Santa Clara,CA,95050,US,"2065 Martin Avenue #103, Santa Clara, CA 95050, US",2,Studio,,,,
+TRUE,C,20,General Motors Global Technical Center,404 E. 10 Mile Road Suite 150,Pleasant Ridge,MI,48069-1201,US,"404 E. 10 Mile Road Suite 150, Pleasant Ridge, MI 48069-1201, US",2,Studio,,,,
+TRUE,C,10,Georgia Pacific,"1259 Seaboard Industrial Blvd NW
+",Atlanta,GA,30318,US,"1259 Seaboard Industrial Blvd NW
+, Atlanta, GA 30318, US",1,Studio,,,Matt Williquette,matthew.williquette@gapac.com
+TRUE,C,10,Gillette College,,Houston,TX,80020,US,", Houston, TX 80020, US",1,Studio,,,,
+TRUE,B,30,GoEngineer Corporate -Demo-Terminated VAR,1787 East Fort Union Blvd Suite 200,Salt Lake City,UT,84121,US,"1787 East Fort Union Blvd Suite 200, Salt Lake City, UT 84121, US",3,Studio,,,,
+TRUE,C,10,"Google, Inc.","PD Labs
+Att: smithmichael@google.com
+2081 Stierlin Ct.",Mountain View,CA,94042,US,"PD Labs
+Att: smithmichael@google.com
+2081 Stierlin Ct., Mountain View, CA 94042, US",1,Studio,,,,
+TRUE,C,10,Gosiger Machine Tools - Demo,108 McDonough Street,Dayton,OH,45402,US,"108 McDonough Street, Dayton, OH 45402, US",1,Studio,,,,
+TRUE,C,10,Griner Engi-Bloomington,2500 n curry pike,Bloomington,IN,47404,US,"2500 n curry pike, Bloomington, IN 47404, US",1,Studio,,,,jack@willowriverconsulting.com
+TRUE,C,20,Gulf Organisation for Research and Development  (GORD),333 Three D Systems Circle,Rock Hill,SC,29730,US,"333 Three D Systems Circle, Rock Hill, SC 29730, US",2,Studio,,,Anil Pedhadia,anil@3d-me.com
+TRUE,C,10,Hi-Vol Products,12955 Inkster Road,Livonia,MI,48150,US,"12955 Inkster Road, Livonia, MI 48150, US",1,Studio,,,,
+TRUE,C,10,"Highlands Diversified Services, Inc.","250 Westinghouse Drive
+",London,KY,40741,US,"250 Westinghouse Drive
+, London, KY 40741, US",1,Studio,,,,
+TRUE,A,60,HowardUniversity,"1244 Ritchie Hwy., Suite 10",Arnold,MD,21012,US,"1244 Ritchie Hwy., Suite 10, Arnold, MD 21012, US",6,Studio,,,,
+TRUE,C,10,"Hydraforce, Inc.",500 Barclay Boulevard,Lincolnshire,IL,60069,US,"500 Barclay Boulevard, Lincolnshire, IL 60069, US",1,Studio,,,,
+TRUE,C,10,INTEL CORPORATION,2200 Mission College Boulevard,Santa Clara,CA,95054,US,"2200 Mission College Boulevard, Santa Clara, CA 95054, US",1,Studio,,,Dan Susman,danielx.john.susman@intel.com
+TRUE,C,10,John Zink Company LLC,11920 East Apache Street,Tulsa,OK,74116,US,"11920 East Apache Street, Tulsa, OK 74116, US",1,Studio,,,Zach Langley,Zach.Langley@kes.global
+TRUE,C,10,Knight Global,2705 Commerce Parkway Attn:  Accounts Payable,Auburn Hills,MI,48326,US,"2705 Commerce Parkway Attn:  Accounts Payable, Auburn Hills, MI 48326, US",1,Studio,,,,
+TRUE,C,20,Lawrence Livermore National Laboratory,29250 Union City Blvd,Union City,CA,94587,US,"29250 Union City Blvd, Union City, CA 94587, US",2,Studio,,,"Gonzalez, Joaquin Elias",gonzalez128@llnl.gov
+TRUE,C,10,Massachusetts Institute of Technology,PO Box 9169 accounts-payable@mit.edu,Cambridge,MA,02139-9169,US,"PO Box 9169 accounts-payable@mit.edu, Cambridge, MA 02139-9169, US",1,Studio,,,,
+TRUE,C,10,Medtronic Rice Creek Central,E-MAIL:  RS.USAP@Medtronic.com PO Box 778,Minneapolis,MN,55440,US,"E-MAIL:  RS.USAP@Medtronic.com PO Box 778, Minneapolis, MN 55440, US",1,Studio,,,,
+TRUE,C,10,Metal Technology,173 Queen Avenue SE,Albany,OR,97322,US,"173 Queen Avenue SE, Albany, OR 97322, US",1,Studio,,,,
+TRUE,B,30,Mineral Area College,58 East South Street,Rossville,IN,46065,US,"58 East South Street, Rossville, IN 46065, US",3,Studio,,,,
+TRUE,C,10,Moen Incorporated North Olmstead,Attn:  Accounts Payable P.O. Box 8022 USAAPINVOICE@MOEN.COM,North Olmsted,OH,44070,US,"Attn:  Accounts Payable P.O. Box 8022 USAAPINVOICE@MOEN.COM, North Olmsted, OH 44070, US",1,Studio,,,,
+TRUE,B,40,Moshun LLC,228 Park Avenue South,New York,NY,10003,US,"228 Park Avenue South, New York, NY 10003, US",4,Studio,,,Jordan Gaulke,jgaulke@dearborntool.com
+TRUE,C,10,Naval Air Warfare Center Weapons (NAWCWD),,Newbury Park,CA,,US,", Newbury Park, CA , US",1,Studio,,,,
+TRUE,C,10,Naval Post Graduate School,"787 W. Woodbury Road,10",Altadena,CA,91001,US,"787 W. Woodbury Road,10, Altadena, CA 91001, US",1,Studio,,,"Puetter, Lucas",lucas.puetter.gy@nps.edu
+TRUE,C,10,Naval Surface Warfare Center,5317 Wilson Blvd,Arlington,VA,22205,US,"5317 Wilson Blvd, Arlington, VA 22205, US",1,Studio,,,"Ferro, Tyler J  CIV USN NAVSURFWARCEN DAH VA",tyler.j.ferro.civ@us.navy.mil
+TRUE,C,10,NEWLAB,"New Lab Detroit
+2050 15th Street
+Detroit MI 48216",Detroit,,48216,US,"New Lab Detroit
+2050 15th Street
+Detroit MI 48216, Detroit,  48216, US",1,Studio,,,Matthew Barbosa,matthew.barbosa@newlab.com
+TRUE,C,20,NIEHS,448 N Cedar Bluff Rd Suite 334,Knoxville,TN,37923,US,"448 N Cedar Bluff Rd Suite 334, Knoxville, TN 37923, US",2,Studio,,,,
+TRUE,C,10,"Nissan North America, Inc.",15231 Laguna Canyon Road Suite 250,Irvine,CA,92618,US,"15231 Laguna Canyon Road Suite 250, Irvine, CA 92618, US",1,Studio,,,,
+TRUE,C,10,Nissan Technical Center North America,"39001 Sunrise Drive
+",Farmington Hills,MI,48333,US,"39001 Sunrise Drive
+, Farmington Hills, MI 48333, US",1,Studio,,,"Attard, Dan",attardd@nrd.nissan-usa.com
+TRUE,C,10,NSWC - Indian Head,"155 Passaic Avenue
+",Fairfield,NJ,7004,US,"155 Passaic Avenue
+, Fairfield, NJ 7004, US",1,Studio,,,Anna Carandang,annacarandang@desktopmetal.com
+TRUE,C,10,NSWC-Corona,1860 Town and Country Drive,Norco,CA,92860,US,"1860 Town and Country Drive, Norco, CA 92860, US",1,Studio,,,"Van Weezendonk, Mark F",mark.f.vanweezendonk@hii.com
+TRUE,C,10,Oriskany Manufacturing Technologies,"2 Wurz Avenue
+",Yorkville,NY,13495,US,"2 Wurz Avenue
+, Yorkville, NY 13495, US",1,Studio,,,,
+TRUE,C,10,Owens Corning,P.O. Box 13950,Durham,NC,27709,US,"P.O. Box 13950, Durham, NC 27709, US",1,Studio,,,,
+TRUE,B,30,"PCC Structurals, Inc.","LARGE PARTS CAMPUS-- TITANIUM (LPC-T) RECEIVING DOCK, Ref PO PC194440",Portland,OR,97222,US,"LARGE PARTS CAMPUS-- TITANIUM (LPC-T) RECEIVING DOCK, Ref PO PC194440, Portland, OR 97222, US",3,Studio,,,"Johnson, Peter",peter.johnson@pccstructurals.com
+TRUE,C,10,Phoenix Analysis & Design Technologies - Demo - Terminated VAR,"7755 S. Research Dr, Suite 110 Attn Kathryn Pesta",Tempe,AZ,85284,US,"7755 S. Research Dr, Suite 110 Attn Kathryn Pesta, Tempe, AZ 85284, US",1,Studio,,,,
+TRUE,C,10,Privateer Space,590 Lipoa Parkway,Kihei,HI,96753,US,"590 Lipoa Parkway, Kihei, HI 96753, US",1,Studio,,,Marco Rossi,marco@privateer.com
+TRUE,C,10,Proto Labs,5540 Pioneer Creek Drive,Maple,MN,55359,US,"5540 Pioneer Creek Drive, Maple, MN 55359, US",1,Studio,,,,
+TRUE,C,10,"Regeneron Pharmaceuticals, Inc.","777 Old Saw Mill River Road
+",Tarrytown,NY,10591,US,"777 Old Saw Mill River Road
+, Tarrytown, NY 10591, US",1,Studio,,,Wing Wong,wing.wong1@regeneron.com
+TRUE,C,10,Reliable Automatic Spk Co.,103 Fairview Park Drive,Elmsford,NY,10523,US,"103 Fairview Park Drive, Elmsford, NY 10523, US",1,Studio,,,,
+TRUE,C,10,RESEARCH & TECHNOLOGY INTEGRATION,10440 Furnace Road,Lorton,VA,22079,US,"10440 Furnace Road, Lorton, VA 22079, US",1,Studio,,,Andrew Kim,andrew.e.kim4.civ@army.mil
+TRUE,C,10,Rochester Institute of Technology,6310 Fly Road,East Syracuse,NY,13057,US,"6310 Fly Road, East Syracuse, NY 13057, US",1,Studio,,,,
+TRUE,C,10,ROOTS Education Co,795 Commer Drive,Venice,FL,342929,US,"795 Commer Drive, Venice, FL 342929, US",1,Studio,,,,
+TRUE,C,10,"Emerson Rosemount, Inc.",8000 West Florissant Avenue,St. Louis,MO,63136,US,"8000 West Florissant Avenue, St. Louis, MO 63136, US",1,Studio,,,"Ladd, Robert R [EMR/MSOL/CHAN]",robert.ladd@emerson.com
+TRUE,C,10,Sandia National Laboratories,1515 Eubank Blvd SE,Albuquerque,NM,87123,US,"1515 Eubank Blvd SE, Albuquerque, NM 87123, US",1,Studio,,,"Baker, Jacob Lee",jacbake@sandia.gov
+TRUE,C,10,Segna Inc.,1316 South Barnhart Rd,Troy,OH,45373,US,"1316 South Barnhart Rd, Troy, OH 45373, US",1,Studio,,,,
+TRUE,C,10,Simply 3D Hawaii LLC - Demo,"98-029 Hekaha St, Bldg 5 Unit 36",Aiea,HI,96701,US,"98-029 Hekaha St, Bldg 5 Unit 36, Aiea, HI 96701, US",1,Studio,,,Kai Oshiro,admin@simply3dhawaii.com
+TRUE,C,10,SouthEastern Central Receiving,PO Box 1447,Florence,MS,39073,US,"PO Box 1447, Florence, MS 39073, US",1,Studio,,,,
+TRUE,C,20,"Stanley Black & Decker, Inc",1000 Stanley Drive,New Britan,CT,6053,US,"1000 Stanley Drive, New Britan, CT 06053, US",2,Studio,,,Barbara Miller-Webb,barb.miller-webb@mastergraphics.com
+TRUE,C,20,TAMU Zachery Bldg Renovation - Bldg 125,PO Box 218609,Houston,TX,77218,US,"PO Box 218609, Houston, TX 77218, US",2,Studio,,,,
+TRUE,C,10,"TerraPower, LLC","330 120th Ave NE, Suite 100",Bellevue,WA,98005,US,"330 120th Ave NE, Suite 100, Bellevue, WA 98005, US",1,Studio,,,Dalton Hughes,dhughes@terrapower.com
+TRUE,C,10,"Tesla, Inc.",3500 Deer Creek Road,Palo Alto,CA,94304,US,"3500 Deer Creek Road, Palo Alto, CA 94304, US",1,Studio,,,Owen Coyne,ocoyne@tesla.com
+TRUE,B,30,Texas A&M University,"325 South Persimmon Street
+Suite B",Tomball,TX,77375,US,"325 South Persimmon Street
+Suite B, Tomball, TX 77375, US",3,Studio,,,Gabe Valdez,ogabevaldez@tamu.edu
+TRUE,C,20,The Goodyear Tire & Rubber Company,P.O. Box 666 or email invoices to supplierinvoices@goodyear.com,Akron,OH,44309,US,"P.O. Box 666 or email invoices to supplierinvoices@goodyear.com, Akron, OH 44309, US",2,Studio,,,,
+TRUE,C,10,"The Gorilla Glue Company, LLC","2101 East Kemper Road
+","Cincinnati,",OH,45241,US,"2101 East Kemper Road
+, Cincinnati,, OH 45241, US",1,Studio,,,Kevin Talbot,kevintalbot@gorillaglue.com
+TRUE,C,10,The MITRE Corporation,Accounting Office P.O. Box 847,Bedford,MA,01730-0847,US,"Accounting Office P.O. Box 847, Bedford, MA 01730-0847, US",1,Studio,,,,
+TRUE,C,10,"Touchstone Research Laboratory, Ltd.","125 Newbury Street, Suite 200",Framingham,MA,1701,US,"125 Newbury Street, Suite 200, Framingham, MA 1701, US",1,Studio,,,,ajc@trl.com
+TRUE,C,10,Tyndall AFB,325th Fighter Wing,Tyndall,FL,32403,US,"325th Fighter Wing, Tyndall, FL 32403, US",1,Studio,,,,
+TRUE,B,30,U.S. NNSA C/O Sandia National Labs,5655 Jefferson NE Suite B,Albuquerque,NM,87109,US,"5655 Jefferson NE Suite B, Albuquerque, NM 87109, US",3,Studio,,,,jaferre@sandia.gov
+TRUE,C,10,UC Lawrence Berkeley National Laboratory,"Accounts Payable Office, Subcontract No. 7386389 One Cyclotron Road, M/S 971-AP apinvoices@lbl.gov",Berkeley,CA,94720,US,"Accounts Payable Office, Subcontract No. 7386389 One Cyclotron Road, M/S 971-AP apinvoices@lbl.gov, Berkeley, CA 94720, US",1,Studio,,,,
+TRUE,C,10,"Ultra Machining Company, Inc. (UMC)",500 Chelsea Road,Monticello,MN,55362,US,"500 Chelsea Road, Monticello, MN 55362, US",1,Studio,,,,
+TRUE,C,10,UNC-Pembroke,220 Campus Drive,Asheville,NC,28804,US,"220 Campus Drive, Asheville, NC 28804, US",1,Studio,,,Jackie Sylvester,jackiesylvester@desktopmetal.com
+TRUE,C,10,University of Cincinnati,"Victory Parkway North Lab Building
+2220 Victory Parkway","Cincinnati,",OH,45206,US,"Victory Parkway North Lab Building
+2220 Victory Parkway, Cincinnati,, OH 45206, US",1,Studio,,,"Jones, Benjamin",jones5bs@ucmail.uc.edu
+TRUE,C,10,University of Dayton Research Institute,Accounts Payable 300 College Park,Dayton,OH,45469-7023,US,"Accounts Payable 300 College Park, Dayton, OH 45469-7023, US",1,Studio,,,,
+TRUE,C,10,University of Iowa,Physics & Astro Science    VAN-116,Iowa City,IA,52242,US,"Physics & Astro Science    VAN-116, Iowa City, IA 52242, US",1,Studio,,,Austin Mckee,austin-mckee@uiowa.edu
+TRUE,C,10,University of Maryland,4356 Stadium Drive,College Park,MD,20742,US,"4356 Stadium Drive, College Park, MD 20742, US",1,Studio,,,David Kriesberg,dkriesbe@umd.edu
+TRUE,C,10,University of Michigan,150 Industrial Drive,Lexington,OH,44904,US,"150 Industrial Drive, Lexington, OH 44904, US",1,Studio,,,Gregory Keller,gbkelle@umich.edu
+TRUE,C,10,University of Washington,4928 SW Lake Flora Road,Port Orchard,WA,98367,US,"4928 SW Lake Flora Road, Port Orchard, WA 98367, US",1,Studio,,,Jeff Croom,jcroom@uw.edu
+TRUE,C,10,US Army - Picatinny Aresenal - EOD,"400 Commons Way, Suite D linda.berkman@savitcorp.com",Rockaway,NJ,7866,US,"400 Commons Way, Suite D linda.berkman@savitcorp.com, Rockaway, NJ 7866, US",1,Studio,,,,
+TRUE,C,10,Wilson Tool Int'l Inc.,12912 Farnham Ave,White Bear Lake,MN,55110,US,"12912 Farnham Ave, White Bear Lake, MN 55110, US",1,Studio,,,Brian Lee,brian.lee@wilsontool.com
+TRUE,C,20,Idaho National Laboratory,1765 North Yellowstone Highway,Idaho Falls,ID,83401,US,"1765 North Yellowstone Highway, Idaho Falls, ID 83401, US",1,InnX,,,Joshua Nicholas Zelina,joshua.zelina@inl.gov
+TRUE,C,20,University of Pittsburgh,3700 O'Hara Street,Pittsburgh,PA,15213,US,"3700 O'Hara Street, Pittsburgh, PA 15213, US",1,InnX,,,"Dhanapal, Azhagu Devathai",azd22@pitt.edu
+TRUE,C,20,UNIVERSITY of NORTH CAROLINA - CHARLOTTE,9201 University City Boulevard,Charlotte,NC,28223,US,"9201 University City Boulevard, Charlotte, NC 28223, US",1,InnX,,,Ali Bonakdar,ali.bonakdar@charlotte.edu
+TRUE,C,20,Northwestern University,Department of Mechanical Engineering 2145 Sheridan Road,Evanston,IL,60208,US,"Department of Mechanical Engineering 2145 Sheridan Road, Evanston, IL 60208, US",1,InnX,,,Peter  Li,zhiyuanli2028@u.northwestern.edu
+TRUE,C,20,Arthrex,1336 Innovation Boulevard,Naples,FL,34108,US,"1336 Innovation Boulevard, Naples, FL 34108, US",1,InnX,,,Danielle Gutierrez,danielle.hadd@arthrex.com
+TRUE,C,20,EMBRY- RIDDLE AERONAUTICAL UNIVERSITY- Daytona,1501 Bellevue Avenue,Daytona Beach,FL,32114,US,"1501 Bellevue Avenue, Daytona Beach, FL 32114, US",1,InnX,,,"Bentley, Demi",bentleyd@erau.edu
+TRUE,C,20,Canopy Aerospace,"8101 Midway Drive, Unit A",Littleton,CO,80125,US,"8101 Midway Drive, Unit A, Littleton, CO 80125, US",1,InnX,,,Matthew Gresh,gresh@canopyaerospace.com
+TRUE,C,20,San Diego State University,"5650 Hardy Avenue
+Apartment 14",San Diego,CA,92115,US,"5650 Hardy Avenue
+Apartment 14, San Diego, CA 92115, US",1,InnX,,,Runjian Jiang,rjiang2045@sdsu.edu
+TRUE,C,20,Iowa State University (ExOne),"5000 Tremont Avenue
+Suite 105",Davenport,IA,52807,US,"5000 Tremont Avenue
+Suite 105, Davenport, IA 52807, US",1,InnX,,,"Nelson, Ben [M S E]",bdnlsn@iastate.edu
+TRUE,C,20,Honeywell Aerospace - AZ,111 South 34th Street,Phoenix,AZ,85034,US,"111 South 34th Street, Phoenix, AZ 85034, US",1,InnX,,,Natalya Kublik Crawford,nmohrkub@asu.edu
+TRUE,C,20,MIT,"77 Massachusetts Ave
+",Cambridge,MA,2139,US,"77 Massachusetts Ave
+, Cambridge, MA 2139, US",1,InnX,,,Gina Han,ghan@mit.edu
+TRUE,B,30,EPTAM Plastics Inc,2 Riverside Business Park,Northfield,NH,3276,US,"2 Riverside Business Park, Northfield, NH 03276, US",2,InnX,,,Haley Laliberte,hlaliberte@eptam.com
+TRUE,C,20,University of Michigan,2355 Bonisteel Blvd,Ann Arbor,MI,48109,US,"2355 Bonisteel Blvd, Ann Arbor, MI 48109, US",1,InnX,,,Rui Dong,ruidongd@umich.edu
+TRUE,C,20,New Mexico State University,1040 South Horseshoe Street,Las Cruces,NM,88003,US,"1040 South Horseshoe Street, Las Cruces, NM 88003, US",1,InnX,,,Reyes Lucero,reyes350@nmsu.edu
+TRUE,C,20,NSWCCD-Carderock Division,9500 Macarthur Boulevard,Bethesda,MD,20817,US,"9500 Macarthur Boulevard, Bethesda, MD 20817, US",1,InnX,,,"Schwind, Evan C CIV",evan.c.schwind.civ@us.navy.mil
+TRUE,B,40,Oak Ridge National Laboratory,2360 Cherahala Blvd,Knoxville,TN,37932,US,"2360 Cherahala Blvd, Knoxville, TN 37932, US",3,InnX,,,Amy Elliott,
+TRUE,B,30,"Standard Nuclear, Inc.",200 Europia Avenue,Oak Ridge,TN,37830,US,"200 Europia Avenue, Oak Ridge, TN 37830, US",2,InnX,,,Ricky Kanak,rkanak@standardnuclear.com
+TRUE,C,20,AIM MRO,375 Center Street,Miamiville,OH,45147,US,"375 Center Street, Miamiville, OH 45147, US",1,InnX,,,Justin Boreman,justin.boreman@aimmro.com
+TRUE,C,20,DSB Technologies,3330 Palmer Drive,Janesville,WI,53546,US,"3330 Palmer Drive, Janesville, WI 53546, US",1,InnX,,,"Deming, Steven",sdeming@dsbtech.com
+TRUE,B,30,Lawrence Livermore National Laboratory,7000 East Ave,Livermore,CA,94551,US,"7000 East Ave, Livermore, CA 94551, US",2,InnX,,,"Wei, Amanda Xin",wei9@llnl.gov
+TRUE,C,20,OptiMIM,"10085 SW Commerce Circle
+",Wilsonville,OR,97070,US,"10085 SW Commerce Circle
+, Wilsonville, OR 97070, US",1,InnX,,,Ben Kimball,bkimball@optimim.com
+TRUE,C,20,"CNS, LLC","100 Union Valley Road
+",Oak Ridge,TN,37830,US,"100 Union Valley Road
+, Oak Ridge, TN 37830, US",1,InnX,,,Caleb Powers,
+TRUE,C,20,US Army ARDEC,"Building 302 North
+Lower Level",Picatinny Arsenal,NJ,07806-5000,US,"Building 302 North
+Lower Level, Picatinny Arsenal, NJ 07806-5000, US",1,InnX,,,,
+TRUE,C,20,Illinois Institute of Technology,"3300 South Federal Street
+",Chicago,IL,60616-3793,US,"3300 South Federal Street
+, Chicago, IL 60616-3793, US",1,InnX,,,Meisam Khademitab,mkhademitab@hawk.iit.edu
+TRUE,C,20,AMfg Labs,130 East South Street,Barnesville,OH,43713,US,"130 East South Street, Barnesville, OH 43713, US",1,InnX,,,Ty Leach,tyleach@amfglabs.com
+TRUE,C,20,Connecticut Center for Advanced Technology - CCAT,"409 Silver Lane
+ ",East Hartford,CT,6118,US,"409 Silver Lane
+ , East Hartford, CT 6118, US",1,InnX,,,Jeffrey Crandall,
+TRUE,C,20,GKN Powders - Hoeganaes,1001 Taylors lane,Cinnaminson,NJ,08077-2017,US,"1001 Taylors lane, Cinnaminson, NJ 08077-2017, US",1,InnX,,,Kerri Horvay,kerri.horvay@hoeganaes.com
+TRUE,C,20,US Army Research Laboratory,"6300 Rodman Road
+",Aberdeen Proving Ground,MD,21005,US,"6300 Rodman Road
+, Aberdeen Proving Ground, MD 21005, US",1,InnX,,,"Ku, Nicholas CIV USARMY DEVCOM ARL",nicholas.ku.civ@army.mil
+TRUE,C,20,Materion,"6070 Parkland Blvd
+",Mayfield Heights,OH,44124,US,"6070 Parkland Blvd
+, Mayfield Heights, OH 44124, US",1,InnX,,,Martin Perez,martin.perez@materion.com
+TRUE,C,20,Pall Corporation,3643 NYS Route 281,Cortland,NY,13045,US,"3643 NYS Route 281, Cortland, NY 13045, US",1,InnX,,,"Tan, Hong Wei",hong_wei_tan@pall.com
+TRUE,C,20,Penn State University,201 Old Main,University Park,PA,16802,US,"201 Old Main, University Park, PA 16802, US",1,InnX,,,"Shahed, Kazi Safowan",kxs6079@psu.edu
+TRUE,C,20,Brigham Young University,,Provo,UT,84602,US,", Provo, UT 84602, US",1,InnX,,,Nathan Crane,nbcrane@byu.edu
+TRUE,C,20,Texas A&M University,"Industrial Engineering - Emerging Tech Bldg. Room 4062
+101 Bizzell Street, 3131 TAMU",College Station,TX,77843,US,"Industrial Engineering - Emerging Tech Bldg. Room 4062
+101 Bizzell Street, 3131 TAMU, College Station, TX 77843, US",1,InnX,,,"Pei, ZJ",zjpei@tamu.edu
+TRUE,C,20,University of Texas at El Paso,"Central Receiving
+3120 Sun Bowl Drive",El Paso,TX,79902,US,"Central Receiving
+3120 Sun Bowl Drive, El Paso, TX 79902, US",1,InnX,,,"Ariza-Barba, Diego A",daarizabarba@utep.edu
+TRUE,C,20,University of Utah,135 S. 1460 E. Room 412,Salt Lake City,UT,84112,US,"135 S. 1460 E. Room 412, Salt Lake City, UT 84112, US",1,InnX,,,COLE WALKER DAVID WALKER,cole.walker@utah.edu
+TRUE,C,20,Indiana University,107 S Indiana Ave,Bloomington,IN,47405,US,"107 S Indiana Ave, Bloomington, IN 47405, US",1,InnX,,,"Sohrabpoor, Hamed",hsohrab@iu.edu
+TRUE,C,20,Argonne National Laboratory,9700 S Cass Ave,Lemont,IL,60439,US,"9700 S Cass Ave, Lemont, IL 60439, US",1,InnX,,,"Panko, Alessandra",apanko@anl.gov
+TRUE,C,20,Smith Metal Products,15045 Per Road,Center City,MN,55012,US,"15045 Per Road, Center City, MN 55012, US",1,InnX,,,Todd Jensen,todd.jensen@smithmetals.com
+TRUE,C,20,WSU(Pullman),100 Dairy Rd,Pullman,WA,99164-2920,US,"100 Dairy Rd, Pullman, WA 99164-2920, US",1,InnX,,,Amit Bandyopadhyay,
+TRUE,C,20,BWX Technologies,1720 Mt Athos Road,Lynchburg,VA,24501,US,"1720 Mt Athos Road, Lynchburg, VA 24501, US",1,InnX,,,"St. John, Alden L",alstjohn@bwxt.com
+TRUE,B,30,3M,3M Center Bldg 219 Dock,St. Paul,MN,55144-1000,US,"3M Center Bldg 219 Dock, St. Paul, MN 55144-1000, US",2,InnX,,,Johann Decker,jdecker2@mmm.com
+TRUE,C,20,University of Illinois at Urbana-Champaign,"Materials Science and Engineering Building
+1304 W. Green Street",Urbana,PA,61801,US,"Materials Science and Engineering Building
+1304 W. Green Street, Urbana, PA 61801, US",1,InnX,,,"Smith, Elizabeth J",esmith19@illinois.edu
+TRUE,C,20,Virginia Tech,"Department of Mechanical Engineering, 100S Randolph Hall, MC 0238, 460 Old Turner St.",Blacksburg,VA,24061,US,"Department of Mechanical Engineering, 100S Randolph Hall, MC 0238, 460 Old Turner St., Blacksburg, VA 24061, US",1,InnX,,,"Wei, Amanda",amwei4@vt.edu
+TRUE,C,20,Naval Research Laboratory,"4555 overlook ave
+",Washington,DC,20375,US,"4555 overlook ave
+, Washington , DC 20375, US",1,InnX,,,"Yeom, Junghoon CIV USN NRL WASHINGTON DC",junghoon.yeom.civ@us.navy.mil
+TRUE,C,20,Youngstown State University,1 Tressel Way,Youngstown,OH,44555,US,"1 Tressel Way, Youngstown, OH 44555, US",1,InnX,,,Jay Wargacki,
+TRUE,C,20,Cleveland State University,"2121 Euclid
+WH323",Cleveland,OH,44114,US,"2121 Euclid
+WH323, Cleveland, OH 44114, US",1,InnX,,,James A Elder,j.a.elder50@vikes.csuohio.edu
+TRUE,C,20,University of Arizona,"1230 North Cherry Avenue
+Bldg 242, Room 237B",Tucson,AZ,85721,US,"1230 North Cherry Avenue
+Bldg 242, Room 237B, Tucson, AZ 85721, US",1,InnX,,,Micaehla May,mmay@arizona.edu
+TRUE,C,20,Global Tungsten & Powder Corp,1 Hawes Street,Towanda,PA,18848,US,"1 Hawes Street, Towanda, PA 18848, US",1,InnX,,,Prough Kevin,kevin.prough@globaltungsten.com
+TRUE,C,20,Sakuu Inc. (formally KeraCel Inc.),"5870 Hellyer Avenue
+Suite 50",San Jose,CA,95138,US,"5870 Hellyer Avenue
+Suite 50, San Jose, CA 95138, US",1,InnX,,,Ming Li,ming.li@sakuu.com
+TRUE,C,20,University of Pittsburgh,"University of Pittsburgh
+636 Benedum Hall
+3700 O'Hara St.",Pittsburgh,PA,15261,US,"University of Pittsburgh
+636 Benedum Hall
+3700 O'Hara St., Pittsburgh, PA 15261, US",1,InnX,,,"Rossetti, Cara R",crr77@pitt.edu
+TRUE,C,20,GKN Sinter Metals,,,,,US,", ,  , US",1,InnX,,,,
+TRUE,C,20,Carpenter Technology Corporation,101 West Bern Street,Reading,PA,19601,US,"101 West Bern Street, Reading, PA 19601, US",1,InnX,,,Liza Ruiz,lizar@esreading.com
+TRUE,C,20,Kennametal Inc,1600 Technology Way,Latrobe,,15650,US,"1600 Technology Way, Latrobe,  15650, US",1,InnX,,,Michael Orange,michael.orange@kennametal.com
+TRUE,C,20,Ohio State University | CDME,1314 Kinnear Rd,Columbus,OH,43212,US,"1314 Kinnear Rd, Columbus, OH 43212, US",1,InnX,,,"Papazoglou, Dimitri",papazoglou.2@osu.edu
+TRUE,C,20,Saint-Gobain,9 Goddard Road,Northborough,MA,1532,US,"9 Goddard Road, Northborough, MA 01532, US",1,InnX,,,"Howard, David W.",david.w.howard@saint-gobain.com
+TRUE,C,20,Daytona State College,1770 Technology Blvd,Daytona Beach,FL,32117,US,"1770 Technology Blvd, Daytona Beach, FL 32117, US",1,InnX,,,Dante Leon,dante.leon@daytonastate.edu
+TRUE,C,20,Rice University,6100 Main St,,TX,77005,US,"6100 Main St, , TX 77005, US",1,InnX,,,Wesley Combs,wc50@rice.edu
+TRUE,C,20,Kennametal Inc,1600 Technology Way,Latrobe,PA,15650,US,"1600 Technology Way, Latrobe, PA 15650, US",1,InnX,,,Michael Orange,michael.orange@kennametal.com
+TRUE,C,20,NASA-GLENN RESEARCH CENTER,21000 Brookpark Rd,Cleveland,OH,44135,US,"21000 Brookpark Rd, Cleveland, OH 44135, US",1,InnX,,,"Tuchfeld, Zachary J. [UNIVERSITIES SPACE RESEARCH ASSOCIATION]",zachary.j.tuchfeld@nasa.gov
+TRUE,C,20,Carnegie Mellon University,"5000 Forbes Avenue
+Hamerschlag Hall C121, AM Lab",Pittsburgh,,15213,US,"5000 Forbes Avenue
+Hamerschlag Hall C121, AM Lab, Pittsburgh,  15213, US",1,InnX,,,Pooja Maurya,pmaurya@andrew.cmu.edu
+TRUE,C,20,Embry-Riddle Aeronautical University,600 South Clyde Morris Boulevard,Daytona Beach,FL,32114,US,"600 South Clyde Morris Boulevard, Daytona Beach, FL 32114, US",1,InnX,,,"Zhang, Wenhao",zhangw7@my.erau.edu
+TRUE,C,20,GE Aerospace dba GE Aerospace Research,One Research Circle - ES-121,Niskayuna,NY,12309,US,"One Research Circle - ES-121, Niskayuna, NY 12309, US",1,InnX,,,"Alberts, William",alberts@ge.com
+TRUE,C,20,"Arconic, Inc.",100 Technical Drive,New Kensington,PA,15069,US,"100 Technical Drive, New Kensington, PA 15069, US",1,InnX,,,Janet Bressler,jbressler@4-app.com
+TRUE,C,20,Buffalo Manufacturing Works,847 Main Street,Buffalo,NY,14203,US,"847 Main Street, Buffalo, NY 14203, US",1,InnX,,,Dora Cheung,dcheung@ewi.org
+TRUE,C,20,Alfred University,2 Pine Street,Alfred,NY,14802,US,"2 Pine Street, Alfred, NY 14802, US",1,InnX,,,"Taylor, Erin S",taylore@alfred.edu
+TRUE,C,20,Advanced Powder Products Inc.,301 Enterprise Drive,Philisburg,PA,16866,US,"301 Enterprise Drive, Philisburg, PA 16866, US",1,InnX,,,Nicole Reams,nreams@4-app.com
+TRUE,C,20,University of North Texas,"E-180U - ATTN:  CAAAM
+Discovery Park, University of North Texas
+3940 N Elm Street",Denton,TX,76201,US,"E-180U - ATTN:  CAAAM
+Discovery Park, University of North Texas
+3940 N Elm Street, Denton, TX 76201, US",1,InnX,,,Narendra Dahotre,narendra.dahotre@unt.edu
+TRUE,C,20,"Coherent Ceramics, Inc.",42433 Avenida Alvarado,Temecula,CA,92590,US,"42433 Avenida Alvarado, Temecula, CA 92590, US",1,InnX,,,Bradley Erwin,bradley.erwin@coherent.com
+TRUE,C,20,CAL POLY CORP dba CAL POLY PARTNERS,Campus Dining Receiving Dock/Bulding 19 One Grand Ave,San Luis Obispo,CA,93407,US,"Campus Dining Receiving Dock/Bulding 19 One Grand Ave, San Luis Obispo, CA 93407, US",1,InnX,,,Thale Smith,tsmith50@calpoly.edu
+TRUE,C,20,"Touchstone Research Laboratory, Ltd.","The Millennium Centre, 1142 Middle Creek Rd",Triadelphia,WV,26059,US,"The Millennium Centre, 1142 Middle Creek Rd, Triadelphia, WV 26059, US",1,InnX,,,Michael Spencer,mws@trl.com
+TRUE,C,20,"GE Gas Turbine, LLC","300 Garlington Road, M/S GTTC-174D
+Materials & Processes Engineering",Greenville,SC,29615,US,"300 Garlington Road, M/S GTTC-174D
+Materials & Processes Engineering, Greenville, SC 29615, US",1,InnX,,,"Kottilingam, Srikanth C",srikanth.kottilingam@gevernova.com

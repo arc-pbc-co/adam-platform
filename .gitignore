@@ -35,3 +35,7 @@ docker-compose.override.yml
 *.njsproj*
 *.sln
 *.sw?
+
+# Claude AI - ignore local settings but track skills
+.claude/settings.local.json
+!.claude/skills/

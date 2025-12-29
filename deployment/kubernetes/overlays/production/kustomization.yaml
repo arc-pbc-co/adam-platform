@@ -1,0 +1,93 @@
+# ADAM Platform - Production Overlay
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: adam-platform-production
+
+resources:
+  - ../../base
+  - ../../istio/gateway.yaml
+  - ../../istio/mtls.yaml
+  - ../../edge/ambassador-proxy.yaml
+
+namespace: adam-platform
+
+# Production-specific patches
+patches:
+  # Increase replicas for production
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+    target:
+      kind: Deployment
+      name: api-gateway
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+    target:
+      kind: Deployment
+      name: nova-orchestrator
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+    target:
+      kind: Deployment
+      name: intersect-gateway
+
+  # Production resource limits
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "500m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "1Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "2000m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "2Gi"
+    target:
+      kind: Deployment
+      name: api-gateway
+
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "1000m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "2Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "4000m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "8Gi"
+    target:
+      kind: Deployment
+      name: nova-orchestrator
+
+images:
+  - name: adam-platform/api-gateway
+    newName: gcr.io/adam-platform/api-gateway
+    newTag: v2.0.0
+  - name: adam-platform/nova-orchestrator
+    newName: gcr.io/adam-platform/nova-orchestrator
+    newTag: v2.0.0
+  - name: adam-platform/intersect-gateway
+    newName: gcr.io/adam-platform/intersect-gateway
+    newTag: v2.0.0
+
+commonLabels:
+  environment: production
+
+commonAnnotations:
+  app.kubernetes.io/version: "2.0.0"
+  deployment.kubernetes.io/revision: "1"
+

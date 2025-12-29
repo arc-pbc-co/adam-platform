@@ -1,0 +1,132 @@
+# ADAM Platform - API Gateway Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: adam-platform
+  labels:
+    app: api-gateway
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/part-of: adam
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+        app.kubernetes.io/name: api-gateway
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3200"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: adam-api-gateway
+      containers:
+        - name: api-gateway
+          image: adam-platform/api-gateway:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3200
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: adam-secrets
+                  key: database-url
+            - name: NOVA_URL
+              value: "http://nova-orchestrator:3100"
+            - name: INTERSECT_GATEWAY_URL
+              value: "http://intersect-gateway:3300"
+            - name: NATS_URL
+              value: "nats://nats:4222"
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: adam-secrets
+                  key: redis-url
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: adam-platform
+  labels:
+    app: api-gateway
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3200
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: api-gateway
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: adam-api-gateway
+  namespace: adam-platform
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-gateway-hpa
+  namespace: adam-platform
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-gateway
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+

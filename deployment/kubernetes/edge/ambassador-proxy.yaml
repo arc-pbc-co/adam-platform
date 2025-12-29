@@ -1,0 +1,191 @@
+# ADAM Platform - INTERSECT Ambassador Proxy
+# Envoy-based edge proxy for secure controller communication
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intersect-ambassador
+  namespace: adam-edge
+  labels:
+    app: intersect-ambassador
+    app.kubernetes.io/name: intersect-ambassador
+    app.kubernetes.io/component: edge-proxy
+    app.kubernetes.io/part-of: adam
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: intersect-ambassador
+  template:
+    metadata:
+      labels:
+        app: intersect-ambassador
+    spec:
+      serviceAccountName: intersect-ambassador
+      containers:
+        - name: envoy
+          image: envoyproxy/envoy:v1.28-latest
+          ports:
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+            - name: admin
+              containerPort: 9901
+              protocol: TCP
+          volumeMounts:
+            - name: envoy-config
+              mountPath: /etc/envoy
+              readOnly: true
+            - name: tls-certs
+              mountPath: /etc/envoy/tls
+              readOnly: true
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: admin
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: admin
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 101
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+      volumes:
+        - name: envoy-config
+          configMap:
+            name: intersect-ambassador-config
+        - name: tls-certs
+          secret:
+            secretName: intersect-ambassador-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: intersect-ambassador
+  namespace: adam-edge
+  labels:
+    app: intersect-ambassador
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  type: LoadBalancer
+  ports:
+    - name: https
+      port: 443
+      targetPort: https
+      protocol: TCP
+  selector:
+    app: intersect-ambassador
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: intersect-ambassador
+  namespace: adam-edge
+---
+# Envoy configuration as ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: intersect-ambassador-config
+  namespace: adam-edge
+data:
+  envoy.yaml: |
+    admin:
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 9901
+
+    static_resources:
+      listeners:
+        - name: listener_https
+          address:
+            socket_address:
+              address: 0.0.0.0
+              port_value: 8443
+          filter_chains:
+            - transport_socket:
+                name: envoy.transport_sockets.tls
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+                  require_client_certificate: true
+                  common_tls_context:
+                    tls_certificates:
+                      - certificate_chain:
+                          filename: /etc/envoy/tls/tls.crt
+                        private_key:
+                          filename: /etc/envoy/tls/tls.key
+                    validation_context:
+                      trusted_ca:
+                        filename: /etc/envoy/tls/ca.crt
+              filters:
+                - name: envoy.filters.network.http_connection_manager
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                    stat_prefix: ingress_https
+                    codec_type: AUTO
+                    route_config:
+                      name: local_route
+                      virtual_hosts:
+                        - name: intersect_service
+                          domains: ["*"]
+                          routes:
+                            - match:
+                                prefix: "/"
+                              route:
+                                cluster: intersect_gateway
+                                timeout: 3600s
+                    http_filters:
+                      - name: envoy.filters.http.local_ratelimit
+                        typed_config:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+                          stat_prefix: http_local_rate_limiter
+                          token_bucket:
+                            max_tokens: 100
+                            tokens_per_fill: 10
+                            fill_interval: 1s
+                      - name: envoy.filters.http.router
+                        typed_config:
+                          "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+      clusters:
+        - name: intersect_gateway
+          type: STRICT_DNS
+          lb_policy: ROUND_ROBIN
+          connect_timeout: 10s
+          load_assignment:
+            cluster_name: intersect_gateway
+            endpoints:
+              - lb_endpoints:
+                  - endpoint:
+                      address:
+                        socket_address:
+                          address: intersect-gateway.adam-platform.svc.cluster.local
+                          port_value: 3300
+          transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+              sni: intersect-gateway.adam-platform.svc.cluster.local
+          health_checks:
+            - timeout: 5s
+              interval: 10s
+              unhealthy_threshold: 3
+              healthy_threshold: 2
+              http_health_check:
+                path: "/health"
+

@@ -16,8 +16,32 @@ import {
   AgentActivity,
   Material,
   Learning,
+  Step,
+  IntersectActivityState,
+  WorkflowPhase,
 } from '../types';
 import { logger } from '../utils/logger';
+import {
+  IntersectWorkflowAdapter,
+  createWorkflowAdapter,
+  createGatewayService,
+  createEventBridge,
+  createCorrelationStore,
+  ICorrelationStore,
+  IIntersectGatewayService,
+  IIntersectEventBridge,
+  GatewayConfig,
+  StepExecutionResult,
+  ActivityCorrelation,
+  // Orchestration
+  IScheduler,
+  createScheduler,
+  Agent,
+  createAgent,
+  Supervisor,
+  createSupervisor,
+  EscalationEvent,
+} from '../integrations';
 
 export class NovaOrchestrator {
   private db: Pool;
@@ -38,6 +62,27 @@ export class NovaOrchestrator {
 
   // Workflow states
   private workflows: Map<string, WorkflowState> = new Map();
+
+  // INTERSECT integration
+  private intersectGateway?: IIntersectGatewayService;
+  private intersectEventBridge?: IIntersectEventBridge;
+  private intersectCorrelationStore?: ICorrelationStore;
+  private workflowAdapter?: IntersectWorkflowAdapter;
+  private intersectEnabled: boolean = false;
+
+  // Orchestration (Scheduler-Agent-Supervisor)
+  private scheduler?: IScheduler;
+  private agent?: Agent;
+  private supervisor?: Supervisor;
+
+  // Phase completion tracking
+  private phaseCompletionPromises: Map<string, {
+    resolve: () => void;
+    reject: (error: Error) => void;
+    expectedActivities: number;
+    completedActivities: number;
+    failedActivities: number;
+  }> = new Map();
 
   constructor() {
     // Initialize main database
@@ -102,6 +147,475 @@ export class NovaOrchestrator {
     });
 
     this.initializeNATS();
+    this.initializeIntersect();
+  }
+
+  /**
+   * Initialize INTERSECT integration services
+   */
+  private initializeIntersect(): void {
+    // Check if INTERSECT is enabled
+    const intersectEnabled = process.env.INTERSECT_ENABLED === 'true';
+    if (!intersectEnabled) {
+      logger.info('INTERSECT integration disabled');
+      return;
+    }
+
+    try {
+      // Parse controller configuration from environment
+      const controllers = this.parseControllerConfig();
+
+      // Create gateway configuration
+      const gatewayConfig: GatewayConfig = {
+        natsUrl: process.env.NATS_URL || 'nats://localhost:4222',
+        controllers,
+        defaultTimeout: parseInt(process.env.INTERSECT_TIMEOUT || '300000', 10),
+        retryConfig: {
+          maxRetries: 3,
+          baseDelayMs: 1000,
+          maxDelayMs: 30000,
+        },
+      };
+
+      // Initialize services
+      this.intersectCorrelationStore = createCorrelationStore('memory');
+      this.intersectGateway = createGatewayService(gatewayConfig);
+      this.intersectEventBridge = createEventBridge({
+        natsUrl: process.env.NATS_URL || 'nats://localhost:4222',
+      });
+
+      // Initialize orchestration components (Scheduler-Agent-Supervisor)
+      this.initializeOrchestration();
+
+      // Create workflow adapter with optional scheduler
+      this.workflowAdapter = createWorkflowAdapter(
+        this.intersectGateway,
+        this.intersectEventBridge,
+        this.intersectCorrelationStore,
+        {
+          defaultControllerId: process.env.INTERSECT_DEFAULT_CONTROLLER || 'simulated-controller',
+          defaultTimeout: parseInt(process.env.INTERSECT_TIMEOUT || '300000', 10),
+          useScheduler: process.env.INTERSECT_USE_SCHEDULER === 'true',
+        },
+        this.scheduler
+      );
+
+      // Register callbacks for activity events
+      this.workflowAdapter.onActivityComplete((result) => {
+        this.handleIntersectActivityComplete(result);
+      });
+
+      this.workflowAdapter.onActivityFailed((result) => {
+        this.handleIntersectActivityFailed(result);
+      });
+
+      this.workflowAdapter.onActivityProgress((activityId, progress) => {
+        this.handleIntersectActivityProgress(activityId, progress);
+      });
+
+      // Start event bridge
+      this.intersectEventBridge.start().catch((error) => {
+        logger.error('Failed to start INTERSECT event bridge:', error);
+      });
+
+      this.intersectEnabled = true;
+      logger.info('INTERSECT integration initialized', {
+        controllers: controllers.length,
+        schedulerEnabled: !!this.scheduler,
+      });
+    } catch (error) {
+      logger.error('Failed to initialize INTERSECT integration:', error);
+    }
+  }
+
+  /**
+   * Initialize orchestration components (Scheduler-Agent-Supervisor pattern)
+   */
+  private initializeOrchestration(): void {
+    const useScheduler = process.env.INTERSECT_USE_SCHEDULER === 'true';
+    if (!useScheduler) {
+      logger.info('INTERSECT orchestration (Scheduler-Agent-Supervisor) disabled');
+      return;
+    }
+
+    if (!this.intersectGateway || !this.intersectEventBridge || !this.intersectCorrelationStore) {
+      logger.warn('Cannot initialize orchestration: INTERSECT services not ready');
+      return;
+    }
+
+    try {
+      // Create scheduler
+      this.scheduler = createScheduler({
+        defaultMaxRetries: parseInt(process.env.INTERSECT_MAX_RETRIES || '3', 10),
+        baseRetryDelayMs: parseInt(process.env.INTERSECT_RETRY_DELAY || '5000', 10),
+        maxRetryDelayMs: parseInt(process.env.INTERSECT_MAX_RETRY_DELAY || '60000', 10),
+      });
+
+      // Create agent
+      this.agent = createAgent(
+        this.scheduler,
+        this.intersectCorrelationStore,
+        this.intersectGateway,
+        this.intersectEventBridge,
+        {
+          pollIntervalMs: parseInt(process.env.INTERSECT_POLL_INTERVAL || '5000', 10),
+          maxConcurrent: parseInt(process.env.INTERSECT_MAX_CONCURRENT || '10', 10),
+          agentId: `nova-agent-${process.env.HOSTNAME || Date.now()}`,
+          verbose: process.env.INTERSECT_VERBOSE === 'true',
+        }
+      );
+
+      // Create supervisor
+      this.supervisor = createSupervisor(
+        this.scheduler,
+        this.intersectCorrelationStore,
+        this.intersectGateway,
+        {
+          monitorIntervalMs: parseInt(process.env.INTERSECT_MONITOR_INTERVAL || '30000', 10),
+          staleThresholdMs: parseInt(process.env.INTERSECT_STALE_THRESHOLD || '600000', 10),
+          activityTimeoutMs: parseInt(process.env.INTERSECT_ACTIVITY_TIMEOUT || '3600000', 10),
+          autoRetryEnabled: process.env.INTERSECT_AUTO_RETRY !== 'false',
+          escalationEnabled: process.env.INTERSECT_ESCALATION !== 'false',
+          healthCheckIntervalMs: parseInt(process.env.INTERSECT_HEALTH_CHECK_INTERVAL || '60000', 10),
+        }
+      );
+
+      // Register escalation handler
+      this.supervisor.onEscalation(async (event: EscalationEvent) => {
+        await this.handleEscalation(event);
+      });
+
+      // Start agent and supervisor
+      this.agent.start();
+      this.supervisor.start();
+
+      logger.info('INTERSECT orchestration initialized (Scheduler-Agent-Supervisor)');
+    } catch (error) {
+      logger.error('Failed to initialize INTERSECT orchestration:', error);
+    }
+  }
+
+  /**
+   * Handle escalation events from the supervisor
+   */
+  private async handleEscalation(event: EscalationEvent): Promise<void> {
+    logger.warn('INTERSECT escalation event', event);
+
+    // Publish escalation to NATS for external handling
+    await this.publishEvent('EXPERIMENTS', 'experiment.escalation', {
+      type: event.type,
+      experimentRunId: event.experimentRunId,
+      activityId: event.activityId,
+      controllerId: event.controllerId,
+      error: event.error,
+      retryCount: event.retryCount,
+      timestamp: event.timestamp,
+    });
+
+    // Handle specific escalation types
+    switch (event.type) {
+      case 'controller_offline':
+        logger.error(`Controller ${event.controllerId} is offline`, event);
+        // Could trigger workflow pause or failover logic
+        break;
+      case 'repeated_failures':
+        logger.error(`Repeated failures for experiment ${event.experimentRunId}`, event);
+        // Could mark experiment as failed
+        if (event.experimentRunId) {
+          const workflow = this.workflows.get(event.experimentRunId);
+          if (workflow) {
+            workflow.status = 'failed';
+            await this.updateExperimentStatus(event.experimentRunId, 'failed');
+          }
+        }
+        break;
+      case 'activity_timeout':
+        logger.error(`Activity timeout: ${event.activityId}`, event);
+        break;
+      case 'task_failed':
+        logger.warn(`Task failed: ${event.taskId}`, event);
+        break;
+    }
+  }
+
+  /**
+   * Parse controller configuration from environment
+   */
+  private parseControllerConfig(): Array<{ controllerId: string; endpoint: string; healthEndpoint?: string }> {
+    // Default controllers for development
+    const defaultControllers = [
+      { controllerId: 'simulated-controller', endpoint: 'http://localhost:8090' },
+      { controllerId: 'desktop-metal-controller', endpoint: 'http://localhost:8091' },
+      { controllerId: 'furnace-controller', endpoint: 'http://localhost:8092' },
+      { controllerId: 'characterization-controller', endpoint: 'http://localhost:8093' },
+    ];
+
+    // Check for custom configuration in INTERSECT_CONTROLLERS env var
+    const controllersEnv = process.env.INTERSECT_CONTROLLERS;
+    if (controllersEnv) {
+      try {
+        return JSON.parse(controllersEnv);
+      } catch (error) {
+        logger.warn('Failed to parse INTERSECT_CONTROLLERS, using defaults');
+      }
+    }
+
+    return defaultControllers;
+  }
+
+  /**
+   * Handle INTERSECT activity completion
+   */
+  private async handleIntersectActivityComplete(result: StepExecutionResult): Promise<void> {
+    logger.info('INTERSECT activity completed', { activityId: result.activityId });
+
+    if (!this.intersectCorrelationStore || !result.activityId) return;
+
+    const correlation = await this.intersectCorrelationStore.findByActivityId(result.activityId) as ActivityCorrelation | undefined;
+    if (!correlation) return;
+
+    const workflow = this.workflows.get(correlation.experimentRunId);
+    if (!workflow) return;
+
+    // Update correlation with completion data
+    await this.intersectCorrelationStore.updateStatus(result.activityId, 'completed');
+
+    // Update INTERSECT activity state in workflow
+    this.updateIntersectActivityState(workflow, result.activityId, {
+      status: 'completed',
+      endTime: new Date(),
+      dataProducts: result.dataProducts,
+    });
+
+    // Add to agent activities
+    workflow.agentActivities.push({
+      agentType: 'controller',
+      action: `intersect_activity_${result.activityId}`,
+      startTime: new Date(),
+      endTime: new Date(),
+      status: 'completed',
+      result: { dataProducts: result.dataProducts },
+    });
+
+    // Publish completion event
+    await this.publishEvent('EXPERIMENTS', 'experiment.activity_completed', {
+      experimentId: correlation.experimentRunId,
+      activityId: result.activityId,
+      phase: correlation.phase,
+      runNumber: correlation.runNumber,
+      dataProducts: result.dataProducts,
+    });
+
+    // Check if this completes the current phase
+    await this.checkPhaseCompletion(workflow, correlation);
+  }
+
+  /**
+   * Handle INTERSECT activity failure
+   */
+  private async handleIntersectActivityFailed(result: StepExecutionResult): Promise<void> {
+    logger.error('INTERSECT activity failed', { activityId: result.activityId, error: result.error });
+
+    if (!this.intersectCorrelationStore || !result.activityId) return;
+
+    const correlation = await this.intersectCorrelationStore.findByActivityId(result.activityId) as ActivityCorrelation | undefined;
+    if (!correlation) return;
+
+    const workflow = this.workflows.get(correlation.experimentRunId);
+    if (!workflow) return;
+
+    // Update correlation with failure
+    await this.intersectCorrelationStore.updateStatus(result.activityId, 'failed');
+
+    // Update INTERSECT activity state in workflow
+    this.updateIntersectActivityState(workflow, result.activityId, {
+      status: 'failed',
+      endTime: new Date(),
+      error: result.error,
+    });
+
+    // Add to agent activities
+    workflow.agentActivities.push({
+      agentType: 'controller',
+      action: `intersect_activity_${result.activityId}`,
+      startTime: new Date(),
+      endTime: new Date(),
+      status: 'failed',
+      error: result.error,
+    });
+
+    // Publish failure event
+    await this.publishEvent('EXPERIMENTS', 'experiment.activity_failed', {
+      experimentId: correlation.experimentRunId,
+      activityId: result.activityId,
+      phase: correlation.phase,
+      runNumber: correlation.runNumber,
+      error: result.error,
+    });
+
+    // Check if this affects phase completion (might fail the phase)
+    await this.checkPhaseCompletion(workflow, correlation, result.error);
+  }
+
+  /**
+   * Handle INTERSECT activity progress update
+   */
+  private handleIntersectActivityProgress(activityId: string, progress: number): void {
+    logger.debug('INTERSECT activity progress', { activityId, progress });
+
+    // Find workflow by activity ID
+    for (const [, workflow] of this.workflows) {
+      const activity = workflow.intersectActivities?.find(a => a.activityId === activityId);
+      if (activity) {
+        activity.progress = progress;
+        this.updateExecutionProgress(workflow);
+        break;
+      }
+    }
+  }
+
+  /**
+   * Update an INTERSECT activity's state in the workflow
+   */
+  private updateIntersectActivityState(
+    workflow: WorkflowState,
+    activityId: string,
+    update: Partial<IntersectActivityState>
+  ): void {
+    if (!workflow.intersectActivities) {
+      workflow.intersectActivities = [];
+    }
+
+    const activity = workflow.intersectActivities.find(a => a.activityId === activityId);
+    if (activity) {
+      Object.assign(activity, update);
+    }
+  }
+
+  /**
+   * Update overall execution progress based on activity progress
+   */
+  private updateExecutionProgress(workflow: WorkflowState): void {
+    if (!workflow.intersectActivities || workflow.intersectActivities.length === 0) {
+      workflow.executionProgress = 0;
+      return;
+    }
+
+    const total = workflow.intersectActivities.length;
+    const completed = workflow.intersectActivities.filter(a => a.status === 'completed').length;
+    const inProgress = workflow.intersectActivities.filter(a => a.status === 'running');
+
+    // Sum of completed (100% each) + in-progress (their actual progress)
+    const progressSum = completed * 100 + inProgress.reduce((sum, a) => sum + (a.progress || 0), 0);
+    workflow.executionProgress = Math.round(progressSum / total);
+  }
+
+  /**
+   * Check if all activities for the current phase are complete
+   */
+  private async checkPhaseCompletion(
+    workflow: WorkflowState,
+    correlation: ActivityCorrelation,
+    error?: string
+  ): Promise<void> {
+    const phaseKey = `${workflow.experimentId}_${correlation.phase || workflow.currentPhase}`;
+    const tracker = this.phaseCompletionPromises.get(phaseKey);
+
+    if (!tracker) {
+      // No active phase tracking for this experiment/phase
+      return;
+    }
+
+    if (error) {
+      tracker.failedActivities++;
+      logger.warn(`Activity failed in phase ${correlation.phase}`, {
+        experimentId: workflow.experimentId,
+        activityId: correlation.activityId,
+        failedCount: tracker.failedActivities,
+        error,
+      });
+
+      // Optionally fail fast on first error
+      const failFast = process.env.INTERSECT_FAIL_FAST === 'true';
+      if (failFast && tracker.failedActivities > 0) {
+        this.phaseCompletionPromises.delete(phaseKey);
+        tracker.reject(new Error(`Activity ${correlation.activityId} failed: ${error}`));
+        return;
+      }
+    } else {
+      tracker.completedActivities++;
+    }
+
+    logger.info(`Phase progress: ${tracker.completedActivities}/${tracker.expectedActivities} completed, ${tracker.failedActivities} failed`, {
+      experimentId: workflow.experimentId,
+      phase: correlation.phase,
+    });
+
+    // Check if phase is complete
+    if (tracker.completedActivities + tracker.failedActivities >= tracker.expectedActivities) {
+      this.phaseCompletionPromises.delete(phaseKey);
+
+      if (tracker.failedActivities > 0) {
+        tracker.reject(new Error(`Phase ${correlation.phase} completed with ${tracker.failedActivities} failures`));
+      } else {
+        logger.info(`Phase ${correlation.phase} completed successfully`, {
+          experimentId: workflow.experimentId,
+        });
+        tracker.resolve();
+      }
+    }
+  }
+
+  /**
+   * Wait for all activities in a phase to complete
+   * Returns a promise that resolves when all activities complete or rejects on failure
+   */
+  private waitForPhaseCompletion(
+    experimentId: string,
+    phase: WorkflowPhase,
+    expectedActivities: number
+  ): Promise<void> {
+    const phaseKey = `${experimentId}_${phase}`;
+
+    return new Promise((resolve, reject) => {
+      this.phaseCompletionPromises.set(phaseKey, {
+        resolve,
+        reject,
+        expectedActivities,
+        completedActivities: 0,
+        failedActivities: 0,
+      });
+    });
+  }
+
+  /**
+   * Register an INTERSECT activity in the workflow state
+   */
+  private registerIntersectActivity(
+    workflow: WorkflowState,
+    activityId: string,
+    controllerId: string,
+    activityName: string,
+    metadata: {
+      phase: WorkflowPhase;
+      runNumber?: number;
+      stepIndex?: number;
+    }
+  ): void {
+    if (!workflow.intersectActivities) {
+      workflow.intersectActivities = [];
+    }
+
+    workflow.intersectActivities.push({
+      activityId,
+      controllerId,
+      activityName,
+      phase: metadata.phase,
+      runNumber: metadata.runNumber,
+      stepIndex: metadata.stepIndex,
+      status: 'pending',
+      startTime: new Date(),
+    });
   }
 
   private async initializeNATS() {
@@ -396,6 +910,9 @@ export class NovaOrchestrator {
 
   /**
    * Phase 4: Execution
+   *
+   * When INTERSECT is enabled, this phase submits activities to instrument controllers
+   * and waits for them to complete via the event bridge.
    */
   private async executeExecutionPhase(
     context: ExperimentContext,
@@ -406,8 +923,12 @@ export class NovaOrchestrator {
     logger.info(`Execution phase for experiment ${context.experimentId}`);
 
     workflow.currentPhase = 'executing';
+    workflow.intersectActivities = [];
+    workflow.executionProgress = 0;
 
-    // Execute each run
+    // Collect all execution plans first
+    const allExecutionPlans: { runNumber: number; plans: ExecutionPlan[] }[] = [];
+
     for (const run of doe.runs) {
       const activity = this.startActivity(workflow, 'controller', `execute_run_${run.runNumber}`);
 
@@ -423,18 +944,125 @@ export class NovaOrchestrator {
         throw new Error(`Execution failed for run ${run.runNumber}: ${response.error}`);
       }
 
-      // Submit jobs to hardware
-      for (const executionPlan of response.data) {
-        await this.submitJob(context.experimentId, executionPlan);
+      allExecutionPlans.push({
+        runNumber: run.runNumber,
+        plans: response.data,
+      });
+    }
+
+    // If INTERSECT is enabled, use workflow adapter for execution
+    if (this.intersectEnabled && this.workflowAdapter) {
+      await this.executeWithIntersect(context, workflow, allExecutionPlans);
+    } else {
+      // Fallback: submit jobs directly (original behavior)
+      for (const { runNumber, plans } of allExecutionPlans) {
+        for (const executionPlan of plans) {
+          await this.submitJob(context.experimentId, executionPlan);
+        }
+
+        await this.publishEvent('EXPERIMENTS', 'experiment.run_executing', {
+          experimentId: context.experimentId,
+          runNumber,
+        });
+      }
+    }
+
+    await this.saveCheckpoint(workflow);
+  }
+
+  /**
+   * Execute plans through INTERSECT with bidirectional event tracking
+   */
+  private async executeWithIntersect(
+    context: ExperimentContext,
+    workflow: WorkflowState,
+    allPlans: { runNumber: number; plans: ExecutionPlan[] }[]
+  ): Promise<void> {
+    if (!this.workflowAdapter || !this.intersectCorrelationStore) {
+      throw new Error('INTERSECT services not available');
+    }
+
+    // Count total activities
+    const totalActivities = allPlans.reduce((sum, p) => sum + p.plans.length, 0);
+    logger.info(`Starting ${totalActivities} INTERSECT activities for experiment ${context.experimentId}`);
+
+    // Set workflow to waiting state
+    workflow.status = 'waiting_execution';
+
+    // Set up phase completion tracking
+    const phasePromise = this.waitForPhaseCompletion(
+      context.experimentId,
+      'executing',
+      totalActivities
+    );
+
+    // Submit all activities
+    for (const { runNumber, plans } of allPlans) {
+      for (let stepIndex = 0; stepIndex < plans.length; stepIndex++) {
+        const plan = plans[stepIndex];
+
+        try {
+          // Execute through workflow adapter
+          const result = await this.workflowAdapter.executeExperimentPlan(
+            plan,
+            context.experimentId,
+            undefined // campaignId not in ExperimentContext, pass undefined
+          );
+
+          // Register activity in workflow state
+          if (result.activityId) {
+            this.registerIntersectActivity(workflow, result.activityId, plan.equipmentId, plan.jobType, {
+              phase: 'executing',
+              runNumber,
+              stepIndex,
+            });
+
+            // Update correlation with phase metadata
+            await this.intersectCorrelationStore.save({
+              activityId: result.activityId,
+              experimentRunId: context.experimentId,
+              campaignId: undefined,
+              controllerId: plan.equipmentId, // Use equipmentId as controller
+              activityName: plan.jobType,
+              phase: 'executing',
+              runNumber,
+              stepIndex,
+              totalSteps: plans.length,
+              status: 'running',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+          }
+
+          await this.publishEvent('EXPERIMENTS', 'experiment.activity_started', {
+            experimentId: context.experimentId,
+            runNumber,
+            stepIndex,
+            activityId: result.activityId,
+            jobType: plan.jobType,
+          });
+        } catch (error) {
+          logger.error(`Failed to start activity for run ${runNumber}, step ${stepIndex}:`, error);
+          throw error;
+        }
       }
 
       await this.publishEvent('EXPERIMENTS', 'experiment.run_executing', {
         experimentId: context.experimentId,
-        runNumber: run.runNumber,
+        runNumber,
       });
     }
 
-    await this.saveCheckpoint(workflow);
+    // Wait for all activities to complete (or fail)
+    try {
+      await phasePromise;
+      workflow.status = 'active';
+      workflow.executionProgress = 100;
+      logger.info(`All INTERSECT activities completed for experiment ${context.experimentId}`);
+    } catch (error) {
+      logger.error(`Execution phase failed for experiment ${context.experimentId}:`, error);
+      throw error;
+    }
   }
 
   /**
@@ -658,6 +1286,45 @@ export class NovaOrchestrator {
       [experimentId, executionPlan.equipmentId, executionPlan.jobType, JSON.stringify(executionPlan.parameters)]
     );
 
+    // If INTERSECT is enabled, submit via workflow adapter
+    if (this.intersectEnabled && this.workflowAdapter) {
+      try {
+        // Map execution plan to INTERSECT step
+        const step: Step = {
+          action: executionPlan.jobType,
+          parameters: executionPlan.parameters,
+          equipment: executionPlan.equipmentId,
+          validations: [], // No validations for direct job submission
+        };
+
+        const result = await this.workflowAdapter.executeStep(
+          step,
+          0, // phaseIndex
+          0, // stepIndex
+          experimentId,
+          undefined // campaignId
+        );
+
+        if (!result.success) {
+          logger.error('INTERSECT job submission failed', {
+            experimentId,
+            jobId: executionPlan.jobId,
+            error: result.error,
+          });
+          throw new Error(`INTERSECT job failed: ${result.error}`);
+        }
+
+        logger.info('Job submitted via INTERSECT', {
+          experimentId,
+          jobId: executionPlan.jobId,
+          activityId: result.activityId,
+        });
+      } catch (error) {
+        logger.error('Failed to submit job via INTERSECT:', error);
+        // Fall through to standard event publishing
+      }
+    }
+
     await this.publishEvent('HARDWARE', 'job.submitted', {
       experimentId,
       jobId: executionPlan.jobId,
@@ -771,5 +1438,64 @@ export class NovaOrchestrator {
     } catch (error) {
       logger.error(`Failed to publish event ${stream}.${subject}:`, error);
     }
+  }
+
+  /**
+   * Graceful shutdown of all services
+   */
+  async shutdown(): Promise<void> {
+    logger.info('Shutting down Nova Orchestrator...');
+
+    // Stop orchestration components
+    if (this.supervisor) {
+      this.supervisor.stop();
+      logger.info('Supervisor stopped');
+    }
+
+    if (this.agent) {
+      this.agent.stop();
+      logger.info('Agent stopped');
+    }
+
+    // Stop event bridge
+    if (this.intersectEventBridge) {
+      await this.intersectEventBridge.stop();
+      logger.info('Event bridge stopped');
+    }
+
+    // Close NATS connection
+    if (this.nats) {
+      await this.nats.drain();
+      logger.info('NATS connection closed');
+    }
+
+    // Close database connections
+    await this.db.end();
+    await this.timescaleDb.end();
+    logger.info('Database connections closed');
+
+    logger.info('Nova Orchestrator shutdown complete');
+  }
+
+  /**
+   * Get orchestration metrics for monitoring
+   */
+  async getOrchestrationMetrics(): Promise<{
+    agent?: ReturnType<Agent['getMetrics']>;
+    supervisor?: ReturnType<Supervisor['getMetrics']>;
+    scheduler?: Awaited<ReturnType<IScheduler['getTaskStats']>>;
+  }> {
+    return {
+      agent: this.agent?.getMetrics(),
+      supervisor: this.supervisor?.getMetrics(),
+      scheduler: await this.scheduler?.getTaskStats(),
+    };
+  }
+
+  /**
+   * Get controller health status
+   */
+  getControllerHealth(): Map<string, any> | undefined {
+    return this.supervisor?.getControllerHealth();
   }
 }

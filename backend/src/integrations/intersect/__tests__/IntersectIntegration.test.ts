@@ -74,6 +74,7 @@ class MockInstrumentController implements InstrumentController {
   ): Promise<PerformActionResult> {
     this.actionCounter++;
     return {
+      accepted: true,
       actionName,
       status: 'completed',
       result: { success: true, counter: this.actionCounter },
@@ -197,6 +198,7 @@ class MockInstrumentController implements InstrumentController {
 
     return {
       activityId,
+      activityStatus: activity.status as any,
       status: activity.status,
       progress: activity.progress,
     };
@@ -210,6 +212,7 @@ class MockInstrumentController implements InstrumentController {
 
     return {
       activityId,
+      products: [`product_${activityId}`],
       dataProducts: [
         {
           productUuid: `product_${activityId}`,
@@ -251,7 +254,6 @@ class MockInstrumentController implements InstrumentController {
 describe('INTERSECT Integration', () => {
   let correlationStore: InMemoryCorrelationStore;
   let schemaMapper: DefaultSchemaMapper;
-  let gatewayService: IntersectGatewayService;
   let eventBridge: IntersectEventBridge;
   let mockController: MockInstrumentController;
 
@@ -260,22 +262,10 @@ describe('INTERSECT Integration', () => {
     schemaMapper = new DefaultSchemaMapper();
     mockController = new MockInstrumentController();
 
-    gatewayService = new IntersectGatewayService(
-      {
-        controllerId: mockController.controllerId,
-        endpoint: 'http://localhost:8080',
-        healthEndpoint: '/health',
-      },
+    eventBridge = new IntersectEventBridge(
       correlationStore,
-      schemaMapper
+      { enableLogging: false }
     );
-
-    // Inject mock controller
-    (gatewayService as any).controller = mockController;
-
-    eventBridge = new IntersectEventBridge({
-      correlationStore,
-    });
   });
 
   afterEach(() => {
@@ -601,7 +591,7 @@ describe('INTERSECT Integration', () => {
       await eventBridge.handleIncomingEvent(testEvent);
 
       expect(receivedEvents.length).toBe(1);
-      expect(receivedEvents[0].payload.activityId).toBe('activity-123');
+      expect((receivedEvents[0].payload as any).activityId).toBe('activity-123');
     });
 
     it('should update correlation store on status change', async () => {
@@ -725,9 +715,976 @@ describe('INTERSECT Integration', () => {
       const completionEvents = events.filter(
         (e) =>
           e.eventType === 'activity.status_change' &&
-          e.payload.activityStatus === 'completed'
+          (e.payload as any).activityStatus === 'completed'
       );
       expect(completionEvents.length).toBe(1);
+    });
+  });
+});
+
+// =============================================================================
+// Additional Integration Tests
+// =============================================================================
+
+import {
+  InMemoryScheduler,
+  TaskStatus,
+  TaskPriority,
+  ScheduledTask,
+} from '../orchestration/Scheduler';
+import { Agent, AgentConfig } from '../orchestration/Agent';
+import { Supervisor, SupervisorConfig, EscalationEvent } from '../orchestration/Supervisor';
+import { IIntersectGatewayService } from '../gateway/IntersectGatewayService';
+
+describe('Scheduler', () => {
+  let scheduler: InMemoryScheduler;
+
+  beforeEach(() => {
+    scheduler = new InMemoryScheduler({
+      defaultMaxRetries: 3,
+      baseRetryDelayMs: 100,
+      maxRetryDelayMs: 1000,
+    });
+  });
+
+  describe('Task Scheduling', () => {
+    it('should schedule a new task with default values', async () => {
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-123',
+        campaignId: 'camp-456',
+        controllerId: 'controller-1',
+        activityName: 'test_activity',
+        activityOptions: [{ key: 'param1', value: 'value1' }],
+      });
+
+      expect(task.id).toBeDefined();
+      expect(task.status).toBe('pending');
+      expect(task.priority).toBe('normal');
+      expect(task.retryCount).toBe(0);
+      expect(task.maxRetries).toBe(3);
+    });
+
+    it('should schedule a task with custom priority', async () => {
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-123',
+        campaignId: 'camp-456',
+        controllerId: 'controller-1',
+        activityName: 'critical_activity',
+        activityOptions: [],
+        priority: 'critical',
+      });
+
+      expect(task.priority).toBe('critical');
+    });
+
+    it('should schedule a task with deadline', async () => {
+      const deadline = new Date(Date.now() + 60000);
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-123',
+        campaignId: 'camp-456',
+        controllerId: 'controller-1',
+        activityName: 'timed_activity',
+        activityOptions: [],
+        deadline,
+      });
+
+      expect(task.deadline).toEqual(deadline);
+    });
+  });
+
+  describe('Priority Queuing', () => {
+    it('should return tasks in priority order', async () => {
+      await scheduler.scheduleTask({
+        experimentRunId: 'exp-1',
+        campaignId: 'camp-1',
+        controllerId: 'c1',
+        activityName: 'low_priority',
+        activityOptions: [],
+        priority: 'low',
+      });
+
+      await scheduler.scheduleTask({
+        experimentRunId: 'exp-2',
+        campaignId: 'camp-2',
+        controllerId: 'c1',
+        activityName: 'critical_priority',
+        activityOptions: [],
+        priority: 'critical',
+      });
+
+      await scheduler.scheduleTask({
+        experimentRunId: 'exp-3',
+        campaignId: 'camp-3',
+        controllerId: 'c1',
+        activityName: 'normal_priority',
+        activityOptions: [],
+        priority: 'normal',
+      });
+
+      const readyTasks = await scheduler.getReadyTasks();
+
+      expect(readyTasks[0].priority).toBe('critical');
+      expect(readyTasks[1].priority).toBe('normal');
+      expect(readyTasks[2].priority).toBe('low');
+    });
+
+    it('should sort same-priority tasks by scheduled time', async () => {
+      const task1 = await scheduler.scheduleTask({
+        experimentRunId: 'exp-1',
+        campaignId: 'camp-1',
+        controllerId: 'c1',
+        activityName: 'first_task',
+        activityOptions: [],
+      });
+
+      await new Promise((r) => setTimeout(r, 10));
+
+      const task2 = await scheduler.scheduleTask({
+        experimentRunId: 'exp-2',
+        campaignId: 'camp-2',
+        controllerId: 'c1',
+        activityName: 'second_task',
+        activityOptions: [],
+      });
+
+      const readyTasks = await scheduler.getReadyTasks();
+
+      expect(readyTasks[0].id).toBe(task1.id);
+      expect(readyTasks[1].id).toBe(task2.id);
+    });
+  });
+
+  describe('Task Lifecycle', () => {
+    it('should mark task as started with activity ID', async () => {
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-123',
+        campaignId: 'camp-456',
+        controllerId: 'c1',
+        activityName: 'test',
+        activityOptions: [],
+      });
+
+      const started = await scheduler.markStarted(task.id, 'activity-xyz');
+
+      expect(started.status).toBe('running');
+      expect(started.activityId).toBe('activity-xyz');
+      expect(started.startedAt).toBeDefined();
+    });
+
+    it('should mark task as completed', async () => {
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-123',
+        campaignId: 'camp-456',
+        controllerId: 'c1',
+        activityName: 'test',
+        activityOptions: [],
+      });
+
+      await scheduler.markStarted(task.id, 'activity-xyz');
+      const completed = await scheduler.markCompleted(task.id);
+
+      expect(completed.status).toBe('completed');
+      expect(completed.completedAt).toBeDefined();
+    });
+
+    it('should mark task as failed with error', async () => {
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-123',
+        campaignId: 'camp-456',
+        controllerId: 'c1',
+        activityName: 'test',
+        activityOptions: [],
+      });
+
+      await scheduler.markStarted(task.id, 'activity-xyz');
+      const failed = await scheduler.markFailed(task.id, 'Connection timeout');
+
+      expect(failed.status).toBe('failed');
+      expect(failed.error).toBe('Connection timeout');
+    });
+
+    it('should cancel a pending task', async () => {
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-123',
+        campaignId: 'camp-456',
+        controllerId: 'c1',
+        activityName: 'test',
+        activityOptions: [],
+      });
+
+      const cancelled = await scheduler.cancelTask(task.id, 'User requested');
+
+      expect(cancelled.status).toBe('cancelled');
+      expect(cancelled.error).toBe('User requested');
+    });
+
+    it('should throw when cancelling completed task', async () => {
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-123',
+        campaignId: 'camp-456',
+        controllerId: 'c1',
+        activityName: 'test',
+        activityOptions: [],
+      });
+
+      await scheduler.markStarted(task.id, 'activity-xyz');
+      await scheduler.markCompleted(task.id);
+
+      await expect(scheduler.cancelTask(task.id, 'Too late')).rejects.toThrow(
+        'Cannot cancel completed task'
+      );
+    });
+  });
+
+  describe('Retry Logic', () => {
+    it('should schedule retry with exponential backoff', async () => {
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-123',
+        campaignId: 'camp-456',
+        controllerId: 'c1',
+        activityName: 'test',
+        activityOptions: [],
+        maxRetries: 3,
+      });
+
+      await scheduler.markStarted(task.id, 'activity-1');
+      await scheduler.markFailed(task.id, 'First failure');
+
+      const retried = await scheduler.scheduleRetry(task.id);
+
+      expect(retried).not.toBeNull();
+      expect(retried?.retryCount).toBe(1);
+      expect(retried?.status).toBe('scheduled');
+      expect(retried?.nextRetry).toBeDefined();
+    });
+
+    it('should return null when max retries exceeded', async () => {
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-123',
+        campaignId: 'camp-456',
+        controllerId: 'c1',
+        activityName: 'test',
+        activityOptions: [],
+        maxRetries: 1,
+      });
+
+      await scheduler.markStarted(task.id, 'activity-1');
+      await scheduler.markFailed(task.id, 'First failure');
+      await scheduler.scheduleRetry(task.id);
+
+      await scheduler.markStarted(task.id, 'activity-2');
+      await scheduler.markFailed(task.id, 'Second failure');
+
+      const result = await scheduler.scheduleRetry(task.id);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('Task Queries', () => {
+    beforeEach(async () => {
+      await scheduler.scheduleTask({
+        experimentRunId: 'exp-1',
+        campaignId: 'camp-1',
+        controllerId: 'c1',
+        activityName: 'activity_a',
+        activityOptions: [],
+      });
+
+      const task2 = await scheduler.scheduleTask({
+        experimentRunId: 'exp-1',
+        campaignId: 'camp-1',
+        controllerId: 'c2',
+        activityName: 'activity_b',
+        activityOptions: [],
+      });
+      await scheduler.markStarted(task2.id, 'act-2');
+
+      const task3 = await scheduler.scheduleTask({
+        experimentRunId: 'exp-2',
+        campaignId: 'camp-2',
+        controllerId: 'c1',
+        activityName: 'activity_c',
+        activityOptions: [],
+      });
+      await scheduler.markStarted(task3.id, 'act-3');
+      await scheduler.markCompleted(task3.id);
+    });
+
+    it('should query tasks by status', async () => {
+      const runningTasks = await scheduler.queryTasks({ status: 'running' });
+      expect(runningTasks.length).toBe(1);
+
+      const completedTasks = await scheduler.queryTasks({ status: 'completed' });
+      expect(completedTasks.length).toBe(1);
+    });
+
+    it('should query tasks by experiment run', async () => {
+      const tasks = await scheduler.queryTasks({ experimentRunId: 'exp-1' });
+      expect(tasks.length).toBe(2);
+    });
+
+    it('should query tasks by controller', async () => {
+      const tasks = await scheduler.queryTasks({ controllerId: 'c1' });
+      expect(tasks.length).toBe(2);
+    });
+
+    it('should get task statistics', async () => {
+      const stats = await scheduler.getTaskStats();
+
+      expect(stats.total).toBe(3);
+      expect(stats.pending).toBe(1);
+      expect(stats.running).toBe(1);
+      expect(stats.completed).toBe(1);
+    });
+  });
+
+  describe('Deadline Management', () => {
+    it('should not return tasks past deadline', async () => {
+      const pastDeadline = new Date(Date.now() - 1000);
+      await scheduler.scheduleTask({
+        experimentRunId: 'exp-1',
+        campaignId: 'camp-1',
+        controllerId: 'c1',
+        activityName: 'expired_task',
+        activityOptions: [],
+        deadline: pastDeadline,
+      });
+
+      const futureDeadline = new Date(Date.now() + 60000);
+      await scheduler.scheduleTask({
+        experimentRunId: 'exp-2',
+        campaignId: 'camp-2',
+        controllerId: 'c1',
+        activityName: 'valid_task',
+        activityOptions: [],
+        deadline: futureDeadline,
+      });
+
+      const readyTasks = await scheduler.getReadyTasks();
+      expect(readyTasks.length).toBe(1);
+      expect(readyTasks[0].activityName).toBe('valid_task');
+    });
+  });
+});
+
+// =============================================================================
+// Mock Gateway for Agent/Supervisor Tests
+// =============================================================================
+
+class MockGatewayService {
+  private activityCounter = 0;
+  private controllerStatus: Map<string, boolean> = new Map([['c1', true], ['c2', true]]);
+  public startActivityCalls: Array<{ controllerId: string; activityName: string }> = [];
+  public cancelActivityCalls: Array<{ controllerId: string; activityId: string }> = [];
+
+  async startActivity(params: {
+    controllerId: string;
+    activityName: string;
+    experimentRunId: string;
+    campaignId?: string;
+    activityOptions?: any[];
+    deadline?: Date;
+  }) {
+    this.startActivityCalls.push({
+      controllerId: params.controllerId,
+      activityName: params.activityName,
+    });
+    this.activityCounter++;
+    return {
+      activityId: `mock-activity-${this.activityCounter}`,
+      activityName: params.activityName,
+      status: 'started' as const,
+    };
+  }
+
+  async getActivityStatus(controllerId: string, activityId: string) {
+    return {
+      activityId,
+      activityStatus: 'running' as ActivityStatus,
+      progress: 50,
+    };
+  }
+
+  async getActivityData(controllerId: string, activityId: string) {
+    return {
+      activityId,
+      products: [] as string[],
+      dataProducts: [],
+    };
+  }
+
+  async cancelActivity(controllerId: string, activityId: string, reason: string) {
+    this.cancelActivityCalls.push({ controllerId, activityId });
+  }
+
+  async listControllers() {
+    return [
+      {
+        controllerId: 'c1',
+        controllerName: 'Controller 1',
+        controllerType: 'mock',
+        endpoint: 'http://localhost:8001',
+        status: 'online' as const,
+        lastSeen: new Date(),
+        capabilities: { actions: [], activities: [] },
+      },
+      {
+        controllerId: 'c2',
+        controllerName: 'Controller 2',
+        controllerType: 'mock',
+        endpoint: 'http://localhost:8002',
+        status: 'online' as const,
+        lastSeen: new Date(),
+        capabilities: { actions: [], activities: [] },
+      },
+    ];
+  }
+
+  async getControllerHealth(controllerId: string) {
+    return {
+      healthy: this.controllerStatus.get(controllerId) ?? false,
+    };
+  }
+
+  async performAction() {
+    return { accepted: true, actionName: 'test', status: 'completed' };
+  }
+
+  async listActions() {
+    return [] as string[];
+  }
+
+  async listActivities() {
+    return [] as string[];
+  }
+
+  async executeExperimentPlan() {
+    return { activityId: 'test', activityName: 'test', status: 'started' as const };
+  }
+
+  setControllerHealth(controllerId: string, healthy: boolean) {
+    this.controllerStatus.set(controllerId, healthy);
+  }
+}
+
+describe('Agent', () => {
+  let scheduler: InMemoryScheduler;
+  let correlationStore: InMemoryCorrelationStore;
+  let mockGateway: MockGatewayService;
+  let eventBridge: IntersectEventBridge;
+  let agent: Agent;
+
+  beforeEach(() => {
+    scheduler = new InMemoryScheduler();
+    correlationStore = new InMemoryCorrelationStore();
+    mockGateway = new MockGatewayService();
+    eventBridge = new IntersectEventBridge(correlationStore, { enableLogging: false });
+
+    agent = new Agent(
+      scheduler,
+      correlationStore,
+      mockGateway as unknown as IIntersectGatewayService,
+      eventBridge,
+      {
+        pollIntervalMs: 50,
+        maxConcurrent: 3,
+        agentId: 'test-agent',
+        verbose: false,
+      }
+    );
+  });
+
+  afterEach(() => {
+    agent.stop();
+    eventBridge.stop();
+  });
+
+  describe('Lifecycle', () => {
+    it('should start and stop correctly', () => {
+      expect(agent.isRunning()).toBe(false);
+
+      agent.start();
+      expect(agent.isRunning()).toBe(true);
+
+      agent.stop();
+      expect(agent.isRunning()).toBe(false);
+    });
+
+    it('should not start twice', () => {
+      agent.start();
+      agent.start(); // Should be idempotent
+      expect(agent.isRunning()).toBe(true);
+    });
+  });
+
+  describe('Task Processing', () => {
+    it('should process scheduled tasks', async () => {
+      await scheduler.scheduleTask({
+        experimentRunId: 'exp-1',
+        campaignId: 'camp-1',
+        controllerId: 'c1',
+        activityName: 'test_activity',
+        activityOptions: [],
+      });
+
+      agent.start();
+
+      // Wait for polling
+      await new Promise((r) => setTimeout(r, 100));
+
+      expect(mockGateway.startActivityCalls.length).toBe(1);
+      expect(mockGateway.startActivityCalls[0].activityName).toBe('test_activity');
+    });
+
+    it('should respect max concurrent limit', async () => {
+      // Schedule more tasks than max concurrent
+      for (let i = 0; i < 5; i++) {
+        await scheduler.scheduleTask({
+          experimentRunId: `exp-${i}`,
+          campaignId: `camp-${i}`,
+          controllerId: 'c1',
+          activityName: `activity_${i}`,
+          activityOptions: [],
+        });
+      }
+
+      agent.start();
+
+      // Wait for polling
+      await new Promise((r) => setTimeout(r, 100));
+
+      // Should only process maxConcurrent (3) tasks
+      expect(mockGateway.startActivityCalls.length).toBeLessThanOrEqual(3);
+    });
+
+    it('should track execution metrics', async () => {
+      await scheduler.scheduleTask({
+        experimentRunId: 'exp-1',
+        campaignId: 'camp-1',
+        controllerId: 'c1',
+        activityName: 'test_activity',
+        activityOptions: [],
+      });
+
+      agent.start();
+      await new Promise((r) => setTimeout(r, 100));
+
+      const metrics = agent.getMetrics();
+      expect(metrics.tasksProcessed).toBeGreaterThanOrEqual(1);
+      expect(metrics.agentId).toBe('test-agent');
+    });
+  });
+
+  describe('Event Handling', () => {
+    it('should handle activity completion events', async () => {
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-1',
+        campaignId: 'camp-1',
+        controllerId: 'c1',
+        activityName: 'test_activity',
+        activityOptions: [],
+      });
+
+      agent.start();
+      eventBridge.start();
+
+      await new Promise((r) => setTimeout(r, 100));
+
+      // Simulate completion event
+      await eventBridge.handleIncomingEvent({
+        eventType: 'activity.status_change',
+        controllerId: 'c1',
+        timestamp: new Date(),
+        payload: {
+          activityId: 'mock-activity-1',
+          activityStatus: 'completed',
+          dataProducts: [],
+        },
+      });
+
+      await new Promise((r) => setTimeout(r, 50));
+
+      const taskState = await scheduler.getTask(task.id);
+      expect(taskState?.status).toBe('completed');
+    });
+  });
+});
+
+describe('Supervisor', () => {
+  let scheduler: InMemoryScheduler;
+  let correlationStore: InMemoryCorrelationStore;
+  let mockGateway: MockGatewayService;
+  let supervisor: Supervisor;
+  let escalationEvents: EscalationEvent[];
+
+  beforeEach(() => {
+    scheduler = new InMemoryScheduler();
+    correlationStore = new InMemoryCorrelationStore();
+    mockGateway = new MockGatewayService();
+    escalationEvents = [];
+
+    supervisor = new Supervisor(
+      scheduler,
+      correlationStore,
+      mockGateway as unknown as IIntersectGatewayService,
+      {
+        monitorIntervalMs: 50,
+        staleThresholdMs: 100,
+        activityTimeoutMs: 200,
+        autoRetryEnabled: true,
+        escalationEnabled: true,
+        healthCheckIntervalMs: 100,
+      }
+    );
+
+    supervisor.onEscalation(async (event) => {
+      escalationEvents.push(event);
+    });
+  });
+
+  afterEach(() => {
+    supervisor.stop();
+  });
+
+  describe('Lifecycle', () => {
+    it('should start and stop correctly', () => {
+      expect(supervisor.isRunning()).toBe(false);
+
+      supervisor.start();
+      expect(supervisor.isRunning()).toBe(true);
+
+      supervisor.stop();
+      expect(supervisor.isRunning()).toBe(false);
+    });
+  });
+
+  describe('Metrics', () => {
+    it('should track supervisor metrics', async () => {
+      supervisor.start();
+      await new Promise((r) => setTimeout(r, 100));
+
+      const metrics = supervisor.getMetrics();
+      expect(metrics.checksPerformed).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('Controller Health Monitoring', () => {
+    it('should track controller health status', async () => {
+      supervisor.start();
+      await new Promise((r) => setTimeout(r, 150));
+
+      const metrics = supervisor.getMetrics();
+      expect(metrics.healthChecksPerformed).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should detect offline controllers', async () => {
+      mockGateway.setControllerHealth('c1', false);
+
+      supervisor.start();
+      await new Promise((r) => setTimeout(r, 150));
+
+      const metrics = supervisor.getMetrics();
+      expect(metrics.controllersOffline).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('Escalation', () => {
+    it('should escalate task failures when max retries exceeded', async () => {
+      // Create a task and mark it as failed - supervisor monitoring will detect and escalate
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-1',
+        campaignId: 'camp-1',
+        controllerId: 'c1',
+        activityName: 'failing_activity',
+        activityOptions: [],
+        maxRetries: 0, // No retries - should escalate immediately
+      });
+
+      await scheduler.markStarted(task.id, 'activity-1');
+      await scheduler.markFailed(task.id, 'Simulated failure');
+
+      supervisor.start();
+
+      // Wait for monitoring cycle to detect and escalate the failure
+      await new Promise((r) => setTimeout(r, 150));
+
+      // The supervisor's monitoring cycle should have detected and escalated the failure
+      expect(escalationEvents.length).toBeGreaterThanOrEqual(1);
+      const taskFailedEvent = escalationEvents.find(e =>
+        e.type === 'task_failed' || e.type === 'repeated_failures'
+      );
+      expect(taskFailedEvent).toBeDefined();
+    });
+  });
+});
+
+// =============================================================================
+// Edge Cases and Error Handling Tests
+// =============================================================================
+
+describe('Edge Cases', () => {
+  describe('Correlation Store Edge Cases', () => {
+    let correlationStore: InMemoryCorrelationStore;
+
+    beforeEach(() => {
+      correlationStore = new InMemoryCorrelationStore();
+    });
+
+    it('should return null for non-existent correlation', async () => {
+      const result = await correlationStore.getActivityCorrelation('non-existent');
+      expect(result).toBeNull();
+    });
+
+    it('should return null for non-existent data product', async () => {
+      const result = await correlationStore.getDataProductMapping('non-existent');
+      expect(result).toBeNull();
+    });
+
+    it('should handle multiple correlations for same experiment', async () => {
+      for (let i = 0; i < 10; i++) {
+        await correlationStore.saveActivityCorrelation({
+          activityId: `activity-${i}`,
+          experimentRunId: 'exp-same',
+          controllerId: 'c1',
+          activityName: 'test',
+          status: 'running' as ActivityStatus,
+          startTime: new Date(),
+        });
+      }
+
+      const activities = await correlationStore.getActivitiesByExperimentRun('exp-same');
+      expect(activities.length).toBe(10);
+    });
+
+    it('should update status for existing correlation', async () => {
+      await correlationStore.saveActivityCorrelation({
+        activityId: 'activity-1',
+        experimentRunId: 'exp-1',
+        controllerId: 'c1',
+        activityName: 'test',
+        status: 'started' as ActivityStatus,
+        startTime: new Date(),
+      });
+
+      await correlationStore.updateActivityStatus('activity-1', 'running');
+      await correlationStore.updateActivityStatus('activity-1', 'completed');
+
+      const correlation = await correlationStore.getActivityCorrelation('activity-1');
+      expect(correlation?.status).toBe('completed');
+    });
+  });
+
+  describe('Scheduler Edge Cases', () => {
+    let scheduler: InMemoryScheduler;
+
+    beforeEach(() => {
+      scheduler = new InMemoryScheduler();
+    });
+
+    it('should throw when updating non-existent task', async () => {
+      await expect(
+        scheduler.updateTask('non-existent', { status: 'running' })
+      ).rejects.toThrow('Task not found');
+    });
+
+    it('should throw when cancelling non-existent task', async () => {
+      await expect(
+        scheduler.cancelTask('non-existent', 'reason')
+      ).rejects.toThrow('Task not found');
+    });
+
+    it('should handle empty task queue', async () => {
+      const nextTask = await scheduler.getNextTask();
+      expect(nextTask).toBeNull();
+
+      const readyTasks = await scheduler.getReadyTasks();
+      expect(readyTasks).toEqual([]);
+    });
+
+    it('should handle task metadata', async () => {
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-1',
+        campaignId: 'camp-1',
+        controllerId: 'c1',
+        activityName: 'test',
+        activityOptions: [],
+        metadata: {
+          customField: 'customValue',
+          nestedData: { a: 1, b: 2 },
+        },
+      });
+
+      const retrieved = await scheduler.getTask(task.id);
+      expect(retrieved?.metadata?.customField).toBe('customValue');
+      expect(retrieved?.metadata?.nestedData.a).toBe(1);
+    });
+  });
+
+  describe('Event Bridge Edge Cases', () => {
+    let correlationStore: InMemoryCorrelationStore;
+    let eventBridge: IntersectEventBridge;
+
+    beforeEach(() => {
+      correlationStore = new InMemoryCorrelationStore();
+      eventBridge = new IntersectEventBridge(correlationStore, { enableLogging: false });
+    });
+
+    afterEach(() => {
+      eventBridge.stop();
+    });
+
+    it('should handle unknown event types gracefully', async () => {
+      eventBridge.start();
+
+      // Should not throw - use type assertion to test unknown event type handling
+      await eventBridge.handleIncomingEvent({
+        eventType: 'unknown.event.type' as any,
+        controllerId: 'c1',
+        timestamp: new Date(),
+        payload: {},
+      });
+    });
+
+    it('should handle events for non-existent correlations', async () => {
+      eventBridge.start();
+
+      // Should not throw even though correlation doesn't exist
+      await eventBridge.handleIncomingEvent({
+        eventType: 'activity.status_change',
+        controllerId: 'c1',
+        timestamp: new Date(),
+        payload: {
+          activityId: 'non-existent',
+          activityStatus: 'completed',
+        },
+      });
+    });
+
+    it('should handle multiple subscribers for same event type', async () => {
+      const handler1Events: IntersectEvent[] = [];
+      const handler2Events: IntersectEvent[] = [];
+
+      eventBridge.subscribe('activity.status_change', async (event) => {
+        handler1Events.push(event);
+      });
+
+      eventBridge.subscribe('activity.status_change', async (event) => {
+        handler2Events.push(event);
+      });
+
+      eventBridge.start();
+
+      await eventBridge.handleIncomingEvent({
+        eventType: 'activity.status_change',
+        controllerId: 'c1',
+        timestamp: new Date(),
+        payload: { activityId: '1', activityStatus: 'completed' },
+      });
+
+      expect(handler1Events.length).toBe(1);
+      expect(handler2Events.length).toBe(1);
+    });
+  });
+
+  describe('Schema Mapper Edge Cases', () => {
+    let schemaMapper: DefaultSchemaMapper;
+
+    beforeEach(() => {
+      schemaMapper = new DefaultSchemaMapper();
+    });
+
+    it('should handle empty parameters', () => {
+      const options = schemaMapper.mapAdamStepToActivityOptions(
+        { id: 'step-1', name: 'Test', type: 'test', experimentId: 'exp-1', parameters: {} },
+        'test'
+      );
+      expect(options).toBeDefined();
+    });
+
+    it('should handle missing optional fields in correlation', () => {
+      const correlation = schemaMapper.createCorrelation({
+        experimentId: 'exp-1',
+        experimentRunId: 'run-1',
+        // No campaignId or userId
+      });
+
+      expect(correlation.experimentRunId).toBe('run-1');
+      expect(correlation.campaignId).toBeUndefined();
+    });
+
+    it('should map all activity status types', () => {
+      const statuses = ['started', 'running', 'completed', 'failed', 'cancelled'];
+
+      for (const status of statuses) {
+        const event: IntersectEvent = {
+          eventType: 'activity.status_change',
+          controllerId: 'c1',
+          timestamp: new Date(),
+          payload: {
+            activityId: 'activity-1',
+            activityName: 'test',
+            activityStatus: status,
+            correlation: { experimentRunId: 'exp-1' },
+          },
+        };
+
+        const adamEvent = schemaMapper.mapIntersectEventToAdam(event);
+        expect(adamEvent).toBeDefined();
+        expect(adamEvent.source).toBe('intersect');
+      }
+    });
+  });
+
+  describe('Concurrent Operations', () => {
+    let scheduler: InMemoryScheduler;
+
+    beforeEach(() => {
+      scheduler = new InMemoryScheduler();
+    });
+
+    it('should handle concurrent task scheduling', async () => {
+      const schedulePromises = [];
+
+      for (let i = 0; i < 20; i++) {
+        schedulePromises.push(
+          scheduler.scheduleTask({
+            experimentRunId: `exp-${i}`,
+            campaignId: `camp-${i}`,
+            controllerId: 'c1',
+            activityName: `activity_${i}`,
+            activityOptions: [],
+          })
+        );
+      }
+
+      const tasks = await Promise.all(schedulePromises);
+      expect(tasks.length).toBe(20);
+
+      // All tasks should have unique IDs
+      const ids = new Set(tasks.map((t) => t.id));
+      expect(ids.size).toBe(20);
+    });
+
+    it('should handle concurrent status updates', async () => {
+      const task = await scheduler.scheduleTask({
+        experimentRunId: 'exp-1',
+        campaignId: 'camp-1',
+        controllerId: 'c1',
+        activityName: 'test',
+        activityOptions: [],
+      });
+
+      await scheduler.markStarted(task.id, 'activity-1');
+
+      // Simulate concurrent completion and failure - last one wins
+      await Promise.all([
+        scheduler.updateTask(task.id, { status: 'completed' }),
+        scheduler.updateTask(task.id, { status: 'failed', error: 'Error' }),
+      ]);
+
+      const finalTask = await scheduler.getTask(task.id);
+      // One of the two statuses should be set
+      expect(['completed', 'failed']).toContain(finalTask?.status);
     });
   });
 });

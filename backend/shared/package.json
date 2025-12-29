@@ -1,0 +1,36 @@
+{
+  "name": "@adam/shared-types",
+  "version": "1.0.0",
+  "description": "Shared type definitions for ADAM platform",
+  "main": "dist/types/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/types/index.js"
+    },
+    "./correlation": {
+      "types": "./dist/types/correlation.d.ts",
+      "default": "./dist/types/correlation.js"
+    },
+    "./intersect": {
+      "types": "./dist/types/intersect.d.ts",
+      "default": "./dist/types/intersect.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist",
+    "types"
+  ],
+  "license": "UNLICENSED",
+  "private": true
+}
+

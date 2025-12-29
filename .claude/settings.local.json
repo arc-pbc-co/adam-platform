@@ -1,13 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(docker ps:*)",
-      "Bash(grep:*)",
-      "Bash(cat:*)",
+      "Bash(xargs kill:*)",
       "Bash(npm run build:*)",
-      "Bash(pkill:*)",
-      "Bash(lsof:*)",
-      "Bash(curl:*)"
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(cp:*)",
+      "Bash(frontend/src/components/god-mode/GlobalMap/GlobalMap.tsx )",
+      "Bash(frontend/src/components/god-mode/GlobalMap/SiteDetailPanel.module.css )",
+      "Bash(frontend/src/components/god-mode/GlobalMap/SiteDetailPanel.tsx )",
+      "Bash(frontend/src/components/god-mode/GlobalMap/types.ts )",
+      "Bash(frontend/src/components/god-mode/GlobalMap/useInstallBaseData.ts )",
+      "Bash(frontend/src/components/god-mode/GodModeDashboard.tsx )",
+      "Bash(frontend/src/components/god-mode/TacticalView.tsx )",
+      "Bash(scripts/regenerate-install-base.cjs)",
+      "Bash(cat:*)",
+      "Bash(docker:*)",
+      "Bash(pkill:*)"
     ]
   }
 }

@@ -1,0 +1,68 @@
+# ADAM Platform - Staging Overlay
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: adam-platform-staging
+
+resources:
+  - ../../base
+  - ../../istio/gateway.yaml
+  - ../../istio/mtls.yaml
+
+namespace: adam-platform
+
+# Staging-specific patches
+patches:
+  # Use staging replicas
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      kind: Deployment
+      name: api-gateway
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      kind: Deployment
+      name: nova-orchestrator
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      kind: Deployment
+      name: intersect-gateway
+
+  # Staging-specific gateway hosts
+  - patch: |-
+      - op: replace
+        path: /spec/servers/0/hosts
+        value: ["staging.adam.example.com", "api.staging.adam.example.com"]
+      - op: replace
+        path: /spec/servers/1/hosts
+        value: ["staging.adam.example.com", "api.staging.adam.example.com"]
+    target:
+      kind: Gateway
+      name: adam-gateway
+
+images:
+  - name: adam-platform/api-gateway
+    newName: gcr.io/adam-platform/api-gateway
+    newTag: staging
+  - name: adam-platform/nova-orchestrator
+    newName: gcr.io/adam-platform/nova-orchestrator
+    newTag: staging
+  - name: adam-platform/intersect-gateway
+    newName: gcr.io/adam-platform/intersect-gateway
+    newTag: staging
+
+commonLabels:
+  environment: staging
+
+commonAnnotations:
+  app.kubernetes.io/version: "staging"
+

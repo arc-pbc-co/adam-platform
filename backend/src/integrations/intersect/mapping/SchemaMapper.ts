@@ -56,6 +56,45 @@ export const DesktopMetalActions = {
   CHECK_POWDER_LEVEL: 'check_powder_level',
 } as const;
 
+// Extended correlation with metadata
+export interface ExtendedCorrelation extends Correlation {
+  metadata?: Record<string, string>;
+}
+
+// ADAM step interface for mapping
+export interface AdamStep {
+  id: string;
+  name: string;
+  type: string;
+  experimentId: string;
+  parameters: Record<string, any>;
+}
+
+// ADAM context for correlation
+export interface AdamContext {
+  experimentId: string;
+  experimentRunId: string;
+  campaignId?: string;
+  userId?: string;
+}
+
+// ADAM event format
+export interface AdamEvent {
+  source: string;
+  type: string;
+  experimentRunId: string;
+  campaignId?: string;
+  timestamp: Date;
+  data: Record<string, any>;
+}
+
+// Activity options result
+export interface ActivityOptionsResult {
+  printerId?: string;
+  parameters?: Record<string, any>;
+  [key: string]: any;
+}
+
 export interface SchemaMapper {
   // Version info
   readonly version: string;
@@ -73,6 +112,11 @@ export interface SchemaMapper {
   ): MappingResult<WorkOrderToActivityMapping>;
 
   mapMaterialSpecToOptions(material: MaterialSpec): KeyValue[];
+
+  // Test compatibility methods
+  mapAdamStepToActivityOptions(step: AdamStep, activityName: string): ActivityOptionsResult;
+  createCorrelation(context: AdamContext): ExtendedCorrelation;
+  mapIntersectEventToAdam(event: any): AdamEvent;
 
   // INTERSECT → ADAM mappings
   mapActivityStatusToAdamEvent(
@@ -294,6 +338,58 @@ export class DefaultSchemaMapper implements SchemaMapper {
       : { success: true };
   }
 
+  // Test compatibility methods
+
+  mapAdamStepToActivityOptions(step: AdamStep, activityName: string): ActivityOptionsResult {
+    return {
+      printerId: step.parameters.printerId,
+      parameters: step.parameters,
+      ...step.parameters,
+    };
+  }
+
+  createCorrelation(context: AdamContext): ExtendedCorrelation {
+    return {
+      experimentRunId: context.experimentRunId,
+      campaignId: context.campaignId,
+      metadata: {
+        experimentId: context.experimentId,
+        userId: context.userId || '',
+      },
+    };
+  }
+
+  mapIntersectEventToAdam(event: any): AdamEvent {
+    const payload = event.payload || {};
+    const correlation = payload.correlation || {};
+    const status = payload.activityStatus || 'unknown';
+
+    // Map status to event type
+    let eventType = 'experiment.step.updated';
+    if (status === 'completed') {
+      eventType = 'experiment.step.completed';
+    } else if (status === 'failed') {
+      eventType = 'experiment.step.failed';
+    } else if (status === 'started' || status === 'running') {
+      eventType = 'experiment.step.started';
+    }
+
+    return {
+      source: 'intersect',
+      type: eventType,
+      experimentRunId: correlation.experimentRunId || 'unknown',
+      campaignId: correlation.campaignId,
+      timestamp: event.timestamp || new Date(),
+      data: {
+        activityId: payload.activityId,
+        activityName: payload.activityName,
+        status,
+        progress: payload.progress,
+        dataProducts: payload.dataProducts,
+      },
+    };
+  }
+
   // Private helper methods
 
   private mapJobTypeToActivity(jobType: string): string | null {
@@ -352,6 +448,7 @@ export class DefaultSchemaMapper implements SchemaMapper {
       completed: 'completed',
       failed: 'failed',
       cancelled: 'cancelled',
+      started: 'in_progress',
     };
     return mapping[status] || status;
   }

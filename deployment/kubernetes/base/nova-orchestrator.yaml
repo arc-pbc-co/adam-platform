@@ -1,0 +1,129 @@
+# ADAM Platform - Nova Orchestrator Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nova-orchestrator
+  namespace: adam-platform
+  labels:
+    app: nova-orchestrator
+    app.kubernetes.io/name: nova-orchestrator
+    app.kubernetes.io/component: orchestrator
+    app.kubernetes.io/part-of: adam
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nova-orchestrator
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: nova-orchestrator
+        app.kubernetes.io/name: nova-orchestrator
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3100"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: adam-nova-orchestrator
+      containers:
+        - name: nova-orchestrator
+          image: adam-platform/nova-orchestrator:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3100
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: adam-secrets
+                  key: database-url
+            - name: TIMESCALE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: adam-secrets
+                  key: timescale-url
+            - name: NATS_URL
+              value: "nats://nats:4222"
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: adam-secrets
+                  key: redis-url
+            - name: VECTOR_DB_URL
+              value: "http://qdrant:6333"
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: adam-secrets
+                  key: openai-api-key
+            - name: LLM_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: adam-config
+                  key: llm-model
+            - name: INTERSECT_CONTROLLERS
+              valueFrom:
+                configMapKeyRef:
+                  name: adam-config
+                  key: intersect-controllers
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nova-orchestrator
+  namespace: adam-platform
+  labels:
+    app: nova-orchestrator
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3100
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: nova-orchestrator
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: adam-nova-orchestrator
+  namespace: adam-platform
+

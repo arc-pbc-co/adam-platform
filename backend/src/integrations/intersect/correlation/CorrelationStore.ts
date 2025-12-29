@@ -23,20 +23,26 @@ export interface ICorrelationStore {
     campaignId?: string;
     controllerId: string;
     activityName: string;
+    status?: ActivityStatus;
+    startTime?: Date;
   }): Promise<ActivityCorrelation>;
 
   getActivityCorrelation(activityId: string): Promise<ActivityCorrelation | null>;
   getCorrelationsByExperimentRun(experimentRunId: string): Promise<ActivityCorrelation[]>;
+  getActivitiesByExperimentRun(experimentRunId: string): Promise<ActivityCorrelation[]>; // Alias
   updateActivityStatus(activityId: string, status: ActivityStatus): Promise<void>;
 
   // Data product mappings
   saveDataProductMapping(params: {
     productUuid: string;
     activityId: string;
+    experimentRunId?: string;
+    productName?: string;
     artifactId?: string;
     storageUri?: string;
     contentType?: string;
     metadata?: Record<string, string>;
+    createdAt?: Date;
   }): Promise<DataProductMapping>;
 
   getDataProductMapping(productUuid: string): Promise<DataProductMapping | null>;
@@ -63,6 +69,8 @@ export class InMemoryCorrelationStore implements ICorrelationStore {
     campaignId?: string;
     controllerId: string;
     activityName: string;
+    status?: ActivityStatus;
+    startTime?: Date;
   }): Promise<ActivityCorrelation> {
     const correlation: ActivityCorrelation = {
       id: `corr_${++this.idCounter}`,
@@ -71,8 +79,8 @@ export class InMemoryCorrelationStore implements ICorrelationStore {
       campaignId: params.campaignId,
       controllerId: params.controllerId,
       activityName: params.activityName,
-      status: 'pending',
-      createdAt: new Date(),
+      status: params.status || 'pending',
+      createdAt: params.startTime || new Date(),
       updatedAt: new Date(),
     };
 
@@ -90,6 +98,11 @@ export class InMemoryCorrelationStore implements ICorrelationStore {
     );
   }
 
+  // Alias for test compatibility
+  async getActivitiesByExperimentRun(experimentRunId: string): Promise<ActivityCorrelation[]> {
+    return this.getCorrelationsByExperimentRun(experimentRunId);
+  }
+
   async updateActivityStatus(activityId: string, status: ActivityStatus): Promise<void> {
     const correlation = this.activityCorrelations.get(activityId);
     if (correlation) {
@@ -101,10 +114,13 @@ export class InMemoryCorrelationStore implements ICorrelationStore {
   async saveDataProductMapping(params: {
     productUuid: string;
     activityId: string;
+    experimentRunId?: string;
+    productName?: string;
     artifactId?: string;
     storageUri?: string;
     contentType?: string;
     metadata?: Record<string, string>;
+    createdAt?: Date;
   }): Promise<DataProductMapping> {
     const mapping: DataProductMapping = {
       id: `prod_${++this.idCounter}`,
@@ -114,7 +130,7 @@ export class InMemoryCorrelationStore implements ICorrelationStore {
       storageUri: params.storageUri,
       contentType: params.contentType,
       metadata: params.metadata,
-      createdAt: new Date(),
+      createdAt: params.createdAt || new Date(),
     };
 
     this.dataProductMappings.set(params.productUuid, mapping);
@@ -212,6 +228,11 @@ export class DatabaseCorrelationStore implements ICorrelationStore {
     );
 
     return result.rows.map(this.mapRowToActivityCorrelation);
+  }
+
+  // Alias for getCorrelationsByExperimentRun
+  async getActivitiesByExperimentRun(experimentRunId: string): Promise<ActivityCorrelation[]> {
+    return this.getCorrelationsByExperimentRun(experimentRunId);
   }
 
   async updateActivityStatus(activityId: string, status: ActivityStatus): Promise<void> {

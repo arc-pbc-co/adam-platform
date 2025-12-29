@@ -1,0 +1,94 @@
+# ADAM Platform - Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adam-config
+  namespace: adam-platform
+  labels:
+    app.kubernetes.io/name: adam-config
+    app.kubernetes.io/part-of: adam
+data:
+  # LLM Configuration
+  llm-model: "gpt-4o-mini"
+  
+  # INTERSECT Controllers Configuration
+  # JSON array of controller endpoints
+  intersect-controllers: |
+    [
+      {
+        "controllerId": "desktop-metal-controller",
+        "endpoint": "https://intersect-ambassador.adam-edge.svc.cluster.local/desktop-metal",
+        "healthEndpoint": "/health"
+      },
+      {
+        "controllerId": "furnace-controller",
+        "endpoint": "https://intersect-ambassador.adam-edge.svc.cluster.local/furnace",
+        "healthEndpoint": "/health"
+      },
+      {
+        "controllerId": "characterization-controller",
+        "endpoint": "https://intersect-ambassador.adam-edge.svc.cluster.local/characterization",
+        "healthEndpoint": "/health"
+      }
+    ]
+
+  # Feature flags
+  features: |
+    {
+      "enableExperimentalFeatures": false,
+      "enableDetailedLogging": false,
+      "enableMetricsCollection": true,
+      "enableDistributedTracing": true
+    }
+
+  # Timeouts (in milliseconds)
+  default-activity-timeout: "3600000"
+  default-action-timeout: "300000"
+  health-check-interval: "60000"
+---
+# Secrets template (use external secrets manager in production)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: adam-secrets
+  namespace: adam-platform
+  labels:
+    app.kubernetes.io/name: adam-secrets
+    app.kubernetes.io/part-of: adam
+type: Opaque
+stringData:
+  # Database URLs - replace with actual values
+  database-url: "postgresql://adam:CHANGEME@postgres:5432/adam"
+  timescale-url: "postgresql://adam:CHANGEME@timescaledb:5432/adam_telemetry"
+  redis-url: "redis://:CHANGEME@redis:6379"
+  
+  # API Keys - replace with actual values
+  openai-api-key: "sk-CHANGEME"
+---
+# TLS Certificate for Ambassador (use cert-manager in production)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: intersect-ambassador-tls
+  namespace: adam-edge
+type: kubernetes.io/tls
+data:
+  # Base64 encoded certificate and key
+  # Replace with actual certificates in production
+  tls.crt: ""
+  tls.key: ""
+  ca.crt: ""
+---
+# TLS Certificate for Istio Gateway
+apiVersion: v1
+kind: Secret
+metadata:
+  name: adam-tls-secret
+  namespace: istio-system
+type: kubernetes.io/tls
+data:
+  # Base64 encoded certificate and key
+  # Use cert-manager with Let's Encrypt in production
+  tls.crt: ""
+  tls.key: ""
+

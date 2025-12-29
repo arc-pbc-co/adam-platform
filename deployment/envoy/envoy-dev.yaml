@@ -1,0 +1,116 @@
+# ADAM Platform - Envoy Edge Proxy Configuration (Development)
+# This configuration handles routing between cloud services and edge controllers
+
+admin:
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 9901
+
+static_resources:
+  listeners:
+    # HTTP listener for development
+    - name: listener_http
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 8080
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                codec_type: AUTO
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: intersect_service
+                      domains: ["*"]
+                      routes:
+                        # Health check endpoint
+                        - match:
+                            prefix: "/health"
+                          direct_response:
+                            status: 200
+                            body:
+                              inline_string: '{"status":"healthy"}'
+                        
+                        # Controller API routes
+                        - match:
+                            prefix: "/api/v1/controllers/"
+                          route:
+                            cluster: intersect_gateway
+                            timeout: 300s
+                            retry_policy:
+                              retry_on: "5xx,reset,connect-failure"
+                              num_retries: 3
+                              per_try_timeout: 60s
+
+                        # Activity routes with longer timeout
+                        - match:
+                            prefix: "/api/v1/activities/"
+                          route:
+                            cluster: intersect_gateway
+                            timeout: 3600s
+                            retry_policy:
+                              retry_on: "5xx,reset,connect-failure"
+                              num_retries: 2
+                              per_try_timeout: 300s
+
+                        # Default route
+                        - match:
+                            prefix: "/"
+                          route:
+                            cluster: intersect_gateway
+                            timeout: 60s
+
+                http_filters:
+                  # Rate limiting
+                  - name: envoy.filters.http.local_ratelimit
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+                      stat_prefix: http_local_rate_limiter
+                      token_bucket:
+                        max_tokens: 1000
+                        tokens_per_fill: 100
+                        fill_interval: 1s
+                      filter_enabled:
+                        runtime_key: local_rate_limit_enabled
+                        default_value:
+                          numerator: 100
+                          denominator: HUNDRED
+                      filter_enforced:
+                        runtime_key: local_rate_limit_enforced
+                        default_value:
+                          numerator: 100
+                          denominator: HUNDRED
+
+                  # Router filter (must be last)
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+    # INTERSECT Gateway cluster
+    - name: intersect_gateway
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      connect_timeout: 10s
+      load_assignment:
+        cluster_name: intersect_gateway
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: intersect-gateway
+                      port_value: 3300
+      health_checks:
+        - timeout: 5s
+          interval: 10s
+          unhealthy_threshold: 3
+          healthy_threshold: 2
+          http_health_check:
+            path: "/health"
+

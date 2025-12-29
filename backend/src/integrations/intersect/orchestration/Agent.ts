@@ -159,7 +159,14 @@ export class Agent {
   }
 
   private async handleActivityStatusChange(event: IntersectEvent): Promise<void> {
-    const { activityId, activityStatus } = event.payload;
+    const payload = event.payload as {
+      activityId: string;
+      activityStatus: string;
+      statusMsg?: string;
+      dataProducts?: Array<{ productUuid: string; productName: string; contentType: string }>;
+      correlation?: { experimentRunId?: string; campaignId?: string };
+    };
+    const { activityId, activityStatus } = payload;
 
     // Find execution for this activity
     const execution = Array.from(this.currentExecutions.values())
@@ -172,7 +179,7 @@ export class Agent {
     if (activityStatus === 'completed') {
       await this.handleTaskCompletion(execution.taskId, event);
     } else if (activityStatus === 'failed') {
-      await this.handleTaskFailure(execution.taskId, event.payload.statusMsg || 'Activity failed');
+      await this.handleTaskFailure(execution.taskId, payload.statusMsg || 'Activity failed');
     } else if (activityStatus === 'cancelled') {
       await this.handleTaskCancellation(execution.taskId, 'Activity was cancelled');
     }
@@ -236,10 +243,8 @@ export class Agent {
         activityName: task.activityName,
         activityOptions: task.activityOptions,
         deadline: task.deadline,
-        correlation: {
-          experimentRunId: task.experimentRunId,
-          campaignId: task.campaignId,
-        },
+        experimentRunId: task.experimentRunId,
+        campaignId: task.campaignId,
       });
 
       // Update execution state
@@ -292,17 +297,24 @@ export class Agent {
     // Mark task complete
     await this.scheduler.markCompleted(taskId);
 
+    // Cast payload to typed object
+    const payload = event.payload as {
+      activityId?: string;
+      dataProducts?: Array<{ productUuid: string; productName: string; contentType: string }>;
+      correlation?: { experimentRunId?: string; campaignId?: string };
+    };
+
     // Update correlation
     if (execution.activityId) {
       await this.correlationStore.updateActivityStatus(execution.activityId, 'completed');
 
       // Save data products if present
-      if (event.payload.dataProducts) {
-        for (const product of event.payload.dataProducts) {
+      if (payload.dataProducts) {
+        for (const product of payload.dataProducts) {
           await this.correlationStore.saveDataProductMapping({
             productUuid: product.productUuid,
             activityId: execution.activityId,
-            experimentRunId: event.payload.correlation?.experimentRunId || '',
+            experimentRunId: payload.correlation?.experimentRunId || '',
             productName: product.productName,
             contentType: product.contentType,
             createdAt: new Date(),

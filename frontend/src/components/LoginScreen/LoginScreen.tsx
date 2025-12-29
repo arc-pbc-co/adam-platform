@@ -74,7 +74,7 @@ export function LoginScreen({ onLogin, onBack }: LoginScreenProps) {
         >
           {/* Header */}
           <div className={styles.cardHeader}>
-            <img src="/arc-logo.jpg" alt="Arc" className={styles.logoImage} />
+            <img src="/arc-logo.png" alt="Arc" className={styles.logoImage} />
             <h1 className={styles.title}>ADAM PLATFORM</h1>
             <p className={styles.subtitle}>
               NEURAL LINK AUTHENTICATION REQUIRED

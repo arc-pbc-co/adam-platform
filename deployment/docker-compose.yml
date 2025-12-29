@@ -1,0 +1,259 @@
+# ADAM Platform - Local Development Stack
+# This docker-compose file sets up the complete platform for local development
+
+version: '3.8'
+
+services:
+  # ==========================================================================
+  # Cloud Services
+  # ==========================================================================
+
+  # API Gateway - Express backend
+  api-gateway:
+    build:
+      context: ../backend/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "3200:3200"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://adam:adam@postgres:5432/adam
+      - NOVA_URL=http://nova-orchestrator:3100
+      - INTERSECT_GATEWAY_URL=http://intersect-gateway:3300
+      - NATS_URL=nats://nats:4222
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+      - nats
+    networks:
+      - adam-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3200/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nova Orchestrator - Multi-Agent AI Engine
+  nova-orchestrator:
+    build:
+      context: ../backend/nova
+      dockerfile: Dockerfile.orchestrator
+    ports:
+      - "3100:3100"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://adam:adam@postgres:5432/adam
+      - TIMESCALE_URL=postgresql://adam:adam@timescaledb:5432/adam_telemetry
+      - NATS_URL=nats://nats:4222
+      - REDIS_URL=redis://redis:6379
+      - VECTOR_DB_URL=http://qdrant:6333
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
+      - INTERSECT_CONTROLLERS=${INTERSECT_CONTROLLERS:-[]}
+    depends_on:
+      - postgres
+      - timescaledb
+      - nats
+      - redis
+      - qdrant
+    networks:
+      - adam-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3100/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # INTERSECT Gateway - Protocol translation
+  intersect-gateway:
+    build:
+      context: ../backend
+      dockerfile: docker/Dockerfile.intersect-gateway
+    ports:
+      - "3300:3300"
+    environment:
+      - NODE_ENV=development
+      - NATS_URL=nats://nats:4222
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://adam:adam@postgres:5432/adam
+    depends_on:
+      - nats
+      - redis
+    networks:
+      - adam-network
+      - edge-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3300/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================================================
+  # Data Stores
+  # ==========================================================================
+
+  # PostgreSQL - Primary database
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=adam
+      - POSTGRES_PASSWORD=adam
+      - POSTGRES_DB=adam
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ../backend/docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - adam-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adam"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # TimescaleDB - Time-series telemetry
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=adam
+      - POSTGRES_PASSWORD=adam
+      - POSTGRES_DB=adam_telemetry
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+      - ../backend/docker/init-timescale.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - adam-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adam"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # NATS - Event messaging
+  nats:
+    image: nats:2.10-alpine
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: ["--jetstream", "--store_dir=/data", "-m", "8222"]
+    volumes:
+      - nats-data:/data
+    networks:
+      - adam-network
+      - edge-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - Caching and session store
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - adam-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Qdrant - Vector database for AI embeddings
+  qdrant:
+    image: qdrant/qdrant:v1.7.0
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - adam-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================================================
+  # Observability
+  # ==========================================================================
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../backend/docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - adam-network
+
+  # Grafana - Metrics visualization
+  grafana:
+    image: grafana/grafana:10.2.0
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ../backend/docker/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - adam-network
+
+  # ==========================================================================
+  # Edge Proxy (Development)
+  # ==========================================================================
+
+  # Envoy proxy - Edge gateway for controller communication
+  edge-proxy:
+    image: envoyproxy/envoy:v1.28-latest
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+      - "9901:9901"
+    volumes:
+      - ./envoy/envoy-dev.yaml:/etc/envoy/envoy.yaml
+    networks:
+      - edge-network
+    depends_on:
+      - intersect-gateway
+
+# ==========================================================================
+# Networks
+# ==========================================================================
+
+networks:
+  adam-network:
+    driver: bridge
+  edge-network:
+    driver: bridge
+
+# ==========================================================================
+# Volumes
+# ==========================================================================
+
+volumes:
+  postgres-data:
+  timescale-data:
+  nats-data:
+  redis-data:
+  qdrant-data:
+  prometheus-data:
+  grafana-data:
+

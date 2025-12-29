@@ -1,0 +1,24 @@
+# ADAM Platform - Kustomize Base Configuration
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: adam-platform-base
+
+namespace: adam-platform
+
+resources:
+  - namespace.yaml
+  - configmaps.yaml
+  - api-gateway.yaml
+  - nova-orchestrator.yaml
+  - intersect-gateway.yaml
+  - datastores.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: adam
+  app.kubernetes.io/managed-by: kustomize
+
+commonAnnotations:
+  app.kubernetes.io/version: "2.0.0"
+

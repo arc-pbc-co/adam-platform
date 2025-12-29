@@ -1,0 +1,20 @@
+# ADAM Platform - Kubernetes Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: adam-platform
+  labels:
+    app.kubernetes.io/name: adam-platform
+    app.kubernetes.io/part-of: adam
+    istio-injection: enabled
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: adam-edge
+  labels:
+    app.kubernetes.io/name: adam-edge
+    app.kubernetes.io/part-of: adam
+    # Edge namespace does not have automatic Istio injection
+    # Controllers connect through the Ambassador proxy
+

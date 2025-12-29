@@ -62,8 +62,12 @@ export interface IIntersectEventBridge {
   onActivityStatusChange(handler: EventHandler<InstrumentActivityStatusChange>): void;
   onNormalizedEvent(handler: EventHandler<NormalizedAdamEvent>): void;
 
+  // Generic subscription
+  subscribe(eventType: string, handler: EventHandler<IntersectEvent>): void;
+
   // Manual event injection (for testing)
   injectEvent(event: IntersectEvent): Promise<void>;
+  handleIncomingEvent(event: IntersectEvent): Promise<void>;
 }
 
 /**
@@ -154,6 +158,20 @@ export class IntersectEventBridge implements IIntersectEventBridge {
   }
 
   /**
+   * Generic subscription for any event type
+   */
+  subscribe(eventType: string, handler: EventHandler<IntersectEvent>): void {
+    this.emitter.on(eventType, handler);
+  }
+
+  /**
+   * Handle incoming event (alias for injectEvent, for test compatibility)
+   */
+  async handleIncomingEvent(event: IntersectEvent): Promise<void> {
+    return this.injectEvent(event);
+  }
+
+  /**
    * Inject an event manually (used by controllers and for testing)
    */
   async injectEvent(event: IntersectEvent): Promise<void> {
@@ -173,12 +191,26 @@ export class IntersectEventBridge implements IIntersectEventBridge {
             event.controllerId
           );
           break;
+        case 'activity.progress_update':
+          await this.handleActivityProgressUpdate(event);
+          break;
         default:
           this.log(`Unknown event type: ${event.eventType}`);
       }
     } catch (error) {
       console.error('Error processing INTERSECT event:', error);
     }
+  }
+
+  /**
+   * Handle activity progress update events
+   */
+  private async handleActivityProgressUpdate(event: IntersectEvent): Promise<void> {
+    const payload = event.payload as { activityId: string; progress: number; statusMsg?: string };
+    this.log(`Activity progress update: ${payload.activityId} - ${payload.progress}%`);
+
+    // Emit full event for subscribers
+    this.emitter.emit('activity.progress_update', event);
   }
 
   /**
@@ -206,36 +238,44 @@ export class IntersectEventBridge implements IIntersectEventBridge {
    * Handle activity status change events
    */
   private async handleActivityStatusChange(
-    event: InstrumentActivityStatusChange,
+    payload: InstrumentActivityStatusChange,
     controllerId: string
   ): Promise<void> {
     this.log(
-      `Activity status change: ${event.activityId} - ${event.activityStatus} (${event.progress || 0}%)`
+      `Activity status change: ${payload.activityId} - ${payload.activityStatus} (${payload.progress || 0}%)`
     );
 
     // Update correlation store
     await this.correlationStore.updateActivityStatus(
-      event.activityId,
-      event.activityStatus as ActivityStatus
+      payload.activityId,
+      payload.activityStatus as ActivityStatus
     );
 
-    // Emit raw event for specific handlers
-    this.emitter.emit('activity.status_change', event);
+    // Build full event object for subscribers
+    const fullEvent: IntersectEvent = {
+      eventType: 'activity.status_change',
+      controllerId,
+      timestamp: new Date(),
+      payload,
+    };
+
+    // Emit full event for specific handlers
+    this.emitter.emit('activity.status_change', fullEvent);
 
     // Map to normalized ADAM event
-    const normalizedEvent = this.mapper.mapActivityStatusToAdamEvent(event, controllerId);
+    const normalizedEvent = this.mapper.mapActivityStatusToAdamEvent(payload, controllerId);
 
     // Emit normalized event
     this.emitter.emit('adam.event', normalizedEvent);
 
     // If activity is completed, emit additional completion event
-    if (event.activityStatus === 'completed') {
-      this.emitter.emit('activity.completed', event);
+    if (payload.activityStatus === 'completed') {
+      this.emitter.emit('activity.completed', fullEvent);
     }
 
     // If activity failed, emit failure event for alerting
-    if (event.activityStatus === 'failed') {
-      this.emitter.emit('activity.failed', event);
+    if (payload.activityStatus === 'failed') {
+      this.emitter.emit('activity.failed', fullEvent);
     }
 
     this.log(`Emitted normalized event: ${normalizedEvent.eventType}`);

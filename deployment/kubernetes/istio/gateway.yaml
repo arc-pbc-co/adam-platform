@@ -1,0 +1,162 @@
+# ADAM Platform - Istio Gateway Configuration
+# Handles external traffic ingress with TLS termination
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: adam-gateway
+  namespace: adam-platform
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    # HTTPS for production
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: adam-tls-secret
+      hosts:
+        - "adam.example.com"
+        - "api.adam.example.com"
+    # HTTP redirect to HTTPS
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      tls:
+        httpsRedirect: true
+      hosts:
+        - "adam.example.com"
+        - "api.adam.example.com"
+---
+# Virtual Service for API Gateway routing
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: adam-api
+  namespace: adam-platform
+spec:
+  hosts:
+    - "api.adam.example.com"
+  gateways:
+    - adam-gateway
+  http:
+    # Nova orchestrator routes
+    - match:
+        - uri:
+            prefix: /api/v1/experiments
+        - uri:
+            prefix: /api/v1/orchestration
+      route:
+        - destination:
+            host: nova-orchestrator
+            port:
+              number: 3100
+      timeout: 300s
+      retries:
+        attempts: 3
+        perTryTimeout: 60s
+        retryOn: connect-failure,refused-stream,unavailable,cancelled,retriable-4xx,reset
+
+    # INTERSECT controller routes
+    - match:
+        - uri:
+            prefix: /api/v1/controllers
+        - uri:
+            prefix: /api/v1/activities
+        - uri:
+            prefix: /api/v1/actions
+      route:
+        - destination:
+            host: intersect-gateway
+            port:
+              number: 3300
+      timeout: 3600s
+      retries:
+        attempts: 2
+        perTryTimeout: 300s
+        retryOn: connect-failure,refused-stream,unavailable
+
+    # Default API routes
+    - match:
+        - uri:
+            prefix: /api/
+      route:
+        - destination:
+            host: api-gateway
+            port:
+              number: 3200
+      timeout: 60s
+      retries:
+        attempts: 3
+        perTryTimeout: 20s
+---
+# Destination rules for load balancing and circuit breaker
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: api-gateway-dr
+  namespace: adam-platform
+spec:
+  host: api-gateway
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 100
+        http2MaxRequests: 1000
+        maxRequestsPerConnection: 10
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 50
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: nova-orchestrator-dr
+  namespace: adam-platform
+spec:
+  host: nova-orchestrator
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 50
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 500
+        maxRequestsPerConnection: 5
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 60s
+      baseEjectionTime: 120s
+      maxEjectionPercent: 30
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: intersect-gateway-dr
+  namespace: adam-platform
+spec:
+  host: intersect-gateway
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 200
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 200
+        http2MaxRequests: 2000
+        maxRequestsPerConnection: 20
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 50
+

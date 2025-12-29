@@ -4,7 +4,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { AgentNode, type AgentNodeData, type AgentStatus } from './AgentNode'
+import { AgentNode, type AgentNodeData } from './AgentNode'
 import {
   Play,
   Pause,

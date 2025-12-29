@@ -18,12 +18,11 @@ import {
 } from './Scheduler';
 import {
   ICorrelationStore,
-  ActivityCorrelation,
 } from '../correlation/CorrelationStore';
 import {
   IIntersectGatewayService,
 } from '../gateway/IntersectGatewayService';
-import { ActivityStatus } from '../types';
+import { ActivityStatus, ActivityCorrelation } from '../types';
 
 // ============================================================================
 // Types
@@ -253,20 +252,20 @@ export class Supervisor {
 
     try {
       // Query actual status from controller
-      const status = await this.gateway.getActivityStatus(task.activityId!);
+      const status = await this.gateway.getActivityStatus(task.controllerId, task.activityId!);
 
-      if (status.status === 'completed') {
-        await this.handleLateCompletion(task, status);
-      } else if (status.status === 'failed') {
-        await this.handleActivityFailure(task, status.message || 'Activity failed');
-      } else if (status.status === 'cancelled') {
+      if (status.activityStatus === 'completed') {
+        await this.handleLateCompletion(task, { status: status.activityStatus, dataProducts: [] });
+      } else if (status.activityStatus === 'failed') {
+        await this.handleActivityFailure(task, status.statusMsg || 'Activity failed');
+      } else if (status.activityStatus === 'cancelled') {
         await this.scheduler.cancelTask(task.id, 'Activity was cancelled');
         await this.correlationStore.updateActivityStatus(task.activityId!, 'cancelled');
       } else {
         // Still running - update correlation timestamp
         await this.correlationStore.updateActivityStatus(
           task.activityId!,
-          status.status as ActivityStatus
+          status.activityStatus as ActivityStatus
         );
       }
     } catch (error) {
@@ -335,7 +334,7 @@ export class Supervisor {
     try {
       // Attempt to cancel the activity
       if (task.activityId) {
-        await this.gateway.cancelActivity(task.activityId, 'Timeout exceeded');
+        await this.gateway.cancelActivity(task.controllerId, task.activityId, 'Timeout exceeded');
         await this.correlationStore.updateActivityStatus(task.activityId, 'cancelled');
       }
     } catch (error) {
@@ -470,7 +469,7 @@ export class Supervisor {
 
       for (const controller of controllers) {
         try {
-          const health = await this.gateway.checkControllerHealth(controller.controllerId);
+          const health = await this.gateway.getControllerHealth(controller.controllerId);
 
           const status: ControllerHealthStatus = {
             controllerId: controller.controllerId,

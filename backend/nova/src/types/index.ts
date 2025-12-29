@@ -230,10 +230,14 @@ export interface WorkflowState {
   startTime: Date;
   checkpoints: Checkpoint[];
   agentActivities: AgentActivity[];
+  /** INTERSECT activities currently being executed */
+  intersectActivities?: IntersectActivityState[];
+  /** Progress through execution phase (0-100) */
+  executionProgress?: number;
 }
 
 export type WorkflowPhase = 'planning' | 'designing' | 'simulating' | 'approving' | 'executing' | 'analyzing' | 'complete';
-export type WorkflowStatus = 'active' | 'paused' | 'waiting_approval' | 'failed' | 'success';
+export type WorkflowStatus = 'active' | 'paused' | 'waiting_approval' | 'waiting_execution' | 'failed' | 'success';
 
 export interface Checkpoint {
   phase: WorkflowPhase;
@@ -249,6 +253,25 @@ export interface AgentActivity {
   status: 'running' | 'completed' | 'failed';
   result?: any;
   error?: string;
+}
+
+/**
+ * Tracks an INTERSECT activity within a workflow
+ */
+export interface IntersectActivityState {
+  activityId: string;
+  controllerId: string;
+  activityName: string;
+  phase: WorkflowPhase;
+  runNumber?: number;
+  stepIndex?: number;
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+  progress?: number;
+  startTime?: Date;
+  endTime?: Date;
+  error?: string;
+  dataProducts?: string[];
+  retryCount?: number;
 }
 
 export type AgentType = 'planner' | 'designer' | 'simulator' | 'controller' | 'analyzer';

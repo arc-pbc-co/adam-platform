@@ -1,0 +1,130 @@
+# ADAM Platform - Istio mTLS Configuration
+# Enables strict mutual TLS between all services in the mesh
+---
+# Strict mTLS for the entire namespace
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: adam-platform
+spec:
+  mtls:
+    mode: STRICT
+---
+# Authorization policy - deny all by default
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: adam-platform
+spec:
+  {}
+---
+# Allow API Gateway to receive external traffic
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-api-gateway-ingress
+  namespace: adam-platform
+spec:
+  selector:
+    matchLabels:
+      app: api-gateway
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"]
+    - from:
+        - source:
+            namespaces: ["adam-platform"]
+---
+# Allow Nova Orchestrator to be called by API Gateway and INTERSECT Gateway
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-nova-orchestrator
+  namespace: adam-platform
+spec:
+  selector:
+    matchLabels:
+      app: nova-orchestrator
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/adam-platform/sa/adam-api-gateway"
+              - "cluster.local/ns/adam-platform/sa/adam-intersect-gateway"
+---
+# Allow INTERSECT Gateway to be called by API Gateway and Nova
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-intersect-gateway
+  namespace: adam-platform
+spec:
+  selector:
+    matchLabels:
+      app: intersect-gateway
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/adam-platform/sa/adam-api-gateway"
+              - "cluster.local/ns/adam-platform/sa/adam-nova-orchestrator"
+    # Allow traffic from edge namespace (ambassador proxy)
+    - from:
+        - source:
+            namespaces: ["adam-edge"]
+---
+# Allow access to NATS from platform services
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-nats
+  namespace: adam-platform
+spec:
+  selector:
+    matchLabels:
+      app: nats
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["adam-platform"]
+---
+# Allow access to Redis from platform services
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-redis
+  namespace: adam-platform
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["adam-platform"]
+---
+# Allow access to Qdrant from Nova
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-qdrant
+  namespace: adam-platform
+spec:
+  selector:
+    matchLabels:
+      app: qdrant
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/adam-platform/sa/adam-nova-orchestrator"
+
