@@ -96,8 +96,8 @@ export function WebSocketProvider({
   // Refs for mutable state
   const wsRef = useRef<WebSocket | null>(null)
   const subscriptionsRef = useRef<Map<string, Set<(payload: unknown) => void>>>(new Map())
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const pingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const mountedRef = useRef(true)
 
   // Calculate WebSocket URL
