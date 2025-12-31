@@ -5,7 +5,7 @@
  * while serving as the entry point to the platform.
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Menu,
@@ -31,9 +31,51 @@ interface MarketingPageProps {
   onOpenPlatform: () => void
 }
 
+// Simulated experiment loop messages
+const EXPERIMENT_LOOP = [
+  { type: 'command', text: 'adam run-experiment --campaign="RE-Free Magnets"' },
+  { type: 'info', text: '🔬 EXPERIMENT CYCLE #847 INITIATED' },
+  { type: 'step', text: '├─ Planning Agent: Generating DOE parameters...' },
+  { type: 'success', text: '│  ✓ 12 compositions selected (Fe-Co-Ni variants)' },
+  { type: 'step', text: '├─ Design Agent: Optimizing print profiles...' },
+  { type: 'success', text: '│  ✓ Layer thickness: 50μm, Binder sat: 68%' },
+  { type: 'step', text: '├─ Simulation Agent: Running Live Sinter™...' },
+  { type: 'success', text: '│  ✓ Shrinkage prediction: 18.2% ± 0.3%' },
+  { type: 'step', text: '├─ Controller Agent: Dispatching to fleet...' },
+  { type: 'success', text: '│  ✓ Jobs queued: P2-X25 (4), S-Max (2), Shop (6)' },
+  { type: 'step', text: '├─ Executing print sequence...' },
+  { type: 'progress', text: '│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 100%' },
+  { type: 'step', text: '├─ Analyzer Agent: Processing results...' },
+  { type: 'success', text: '│  ✓ Density: 98.4% | Coercivity: 12.1 kOe' },
+  { type: 'step', text: '└─ Updating knowledge graph...' },
+  { type: 'result', text: '✅ CYCLE COMPLETE: +2.3% improvement over baseline' },
+  { type: 'info', text: '📊 Total experiments this week: 147' },
+  { type: 'info', text: '⏳ Next cycle starting in 3s...' },
+]
+
 export function MarketingPage({ onOpenPlatform }: MarketingPageProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [showTechSpecs, setShowTechSpecs] = useState(false)
+  const [terminalLines, setTerminalLines] = useState<typeof EXPERIMENT_LOOP>([])
+  const [lineIndex, setLineIndex] = useState(0)
+
+  // Animate terminal experiment loop
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLineIndex((prev) => {
+        const next = prev + 1
+        if (next > EXPERIMENT_LOOP.length) {
+          // Reset after showing all lines + pause
+          setTerminalLines([])
+          return 0
+        }
+        setTerminalLines(EXPERIMENT_LOOP.slice(0, next))
+        return next
+      })
+    }, 800) // Add a new line every 800ms
+
+    return () => clearInterval(timer)
+  }, [])
 
   const scrollToSection = (id: string) => {
     setIsMobileMenuOpen(false)
@@ -236,25 +278,29 @@ export function MarketingPage({ onOpenPlatform }: MarketingPageProps) {
                   <span />
                 </div>
                 <span className={styles.terminalTitle}>ADAM ORCHESTRATOR</span>
+                <span className={styles.terminalLive}>● LIVE</span>
               </div>
               <div className={styles.terminalBody}>
-                <div className={styles.terminalLine}>
-                  <span className={styles.prompt}>$</span>
-                  <span>adam status</span>
-                </div>
-                <div className={styles.terminalOutput}>
-                  <p>🤖 ADAM NOVA ORCHESTRATOR v2.0</p>
-                  <p className={styles.success}>✓ All agents operational</p>
-                  <p className={styles.success}>✓ Connected to hardware fleet</p>
-                  <p className={styles.success}>✓ Database sync complete</p>
-                </div>
-                <div className={styles.terminalLine}>
-                  <span className={styles.prompt}>$</span>
-                  <span className={styles.cursor}>|</span>
-                </div>
+                {terminalLines.map((line, i) => (
+                  <motion.div
+                    key={`${lineIndex}-${i}`}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className={`${styles.terminalLine} ${styles[line.type] || ''}`}
+                  >
+                    {line.type === 'command' && <span className={styles.prompt}>$</span>}
+                    <span>{line.text}</span>
+                  </motion.div>
+                ))}
+                {terminalLines.length === 0 && (
+                  <div className={styles.terminalLine}>
+                    <span className={styles.prompt}>$</span>
+                    <span className={styles.cursor}>_</span>
+                  </div>
+                )}
               </div>
               <p className={styles.terminalHint}>
-                * Live simulation of ADAM's reasoning engine
+                * Live simulation of ADAM experiment loop
               </p>
             </div>
           </div>
