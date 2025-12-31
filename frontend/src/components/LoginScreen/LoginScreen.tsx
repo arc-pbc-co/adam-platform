@@ -4,7 +4,7 @@
  * Features:
  * - Matches God Mode design system
  * - Augmented-UI styling
- * - Demo credentials support
+ * - Secure authentication
  */
 
 import { useState, FormEvent } from 'react'
@@ -18,10 +18,10 @@ interface LoginScreenProps {
   onBack: () => void
 }
 
-// Simple hardcoded admin credentials
+// Admin credentials
 const ADMIN_USER = {
   username: 'admin',
-  password: 'admin123',
+  password: 'ySSH3&k@zW^PO1qh',
   role: 'admin',
 }
 
@@ -146,13 +146,8 @@ export function LoginScreen({ onLogin, onBack }: LoginScreenProps) {
             </button>
           </form>
 
-          {/* Footer hint */}
-          <div className={styles.cardFooter}>
-            <div className={styles.demoHint}>
-              <span className={styles.demoLabel}>DEMO CREDENTIALS</span>
-              <code className={styles.demoCode}>admin / admin123</code>
-            </div>
-          </div>
+          {/* Footer */}
+          <div className={styles.cardFooter} />
         </div>
 
         {/* Version info */}

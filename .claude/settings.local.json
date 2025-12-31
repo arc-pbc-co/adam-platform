@@ -18,7 +18,10 @@
       "Bash(scripts/regenerate-install-base.cjs)",
       "Bash(cat:*)",
       "Bash(docker:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(lsof:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)"
     ]
   }
 }
